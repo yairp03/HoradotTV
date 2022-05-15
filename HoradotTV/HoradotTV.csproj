@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UserSecretsId>4f963ee6-d15e-45d9-8144-139164917d47</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Fonts\Assistant-Bold.ttf" />
+    <None Remove="Fonts\Assistant-ExtraBold.ttf" />
+    <None Remove="Fonts\Assistant-ExtraLight.ttf" />
+    <None Remove="Fonts\Assistant-Light.ttf" />
+    <None Remove="Fonts\Assistant-Medium.ttf" />
+    <None Remove="Fonts\Assistant-Regular.ttf" />
+    <None Remove="Fonts\Assistant-SemiBold.ttf" />
+    <None Remove="Resources\Images\chrome-logo.png" />
+    <None Remove="Resources\Images\green-check.png" />
+    <None Remove="Resources\Images\red-x.png" />
+    <None Remove="Resources\Images\sdarot-logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Fonts\Assistant-Light.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-ExtraLight.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-ExtraBold.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-Bold.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-Medium.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-Regular.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\Assistant-SemiBold.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Images\green-check.png" />
+    <Resource Include="Resources\Images\red-x.png" />
+    <Resource Include="Resources\Images\sdarot-logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
+    <PackageReference Include="Refractored.MvvmHelpers" Version="1.6.2" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\chrome-logo.png" />
+  </ItemGroup>
+
+</Project>

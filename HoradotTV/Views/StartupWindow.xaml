@@ -1,0 +1,59 @@
+﻿<Window x:Class="HoradotTV.Views.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HoradotTV.Views"
+        xmlns:vms="clr-namespace:HoradotTV.ViewModels"
+        xmlns:converters="clr-namespace:HoradotTV.Converters"
+        mc:Ignorable="d" FlowDirection="RightToLeft"
+        Title="StartupWindow" Height="525" Width="700">
+    <Window.DataContext>
+        <vms:StartupChecksViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter"/>
+    </Window.Resources>
+    <Grid Margin="10 30">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ItemsControl ItemsSource="{Binding ChecksGroups}" >
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="20 0" CornerRadius="15" BorderBrush="Black" Background="LightGray" BorderThickness="1">
+                        <Grid Margin="25">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Image Source="{Binding ImageUri}"/>
+                            <Label Content="{Binding DisplayText}" ContentStringFormat="{}{0}..." Grid.Row="1" FontSize="20" HorizontalAlignment="Center"/>
+                            <StackPanel Grid.Row="2">
+                                <ProgressBar IsIndeterminate="True" Height="30" Margin="20 0" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <Image Source="/Resources/Images/green-check.png" Height="50" Visibility="{Binding IsDone, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <Image Source="/Resources/Images/red-x.png" Height="60" Visibility="{Binding IsFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                            <Button Grid.Row="3" Margin="0 10" Content="תקן" VerticalContentAlignment="Center"
+                                    Visibility="{Binding IsFailed, Converter={StaticResource BooleanToVisibilityHiddenConverter}}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.FixProblemCommand}"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
+            <Button Margin="70 0" Command="{Binding RunChecksCommand}" Content="בדוק שוב"/>
+            <Button Margin="70 0" Command="{Binding ProceedCommand}" Content="המשך"/>
+        </StackPanel>
+    </Grid>
+</Window>
