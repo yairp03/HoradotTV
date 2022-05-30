@@ -17,7 +17,7 @@ internal class SdarotConnectionCheck : IDependencyCheck
         {
             try
             {
-                var response = await client.GetAsync(Constants.SdarotTV);
+                var response = await client.GetAsync(Constants.SdarotTestUrl);
                 if (!response.IsSuccessStatusCode)
                 {
                     return false;
