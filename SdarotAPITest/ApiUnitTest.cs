@@ -7,24 +7,19 @@ namespace SdarotAPITest
     public class ApiUnitTest
     {
         [TestMethod]
-        public void DriverTest()
+        public async Task DriverTest()
         {
             SdarotDriver driver = new();
             try
             {
                 driver.Initialize(false);
-                var res = driver.SearchSeries("jdlfknbaklesjf");
+                var res = await driver.SearchSeries("שמש");
+                Assert.AreEqual(res.Length, 15);
             }
             finally
             {
                 driver.Shutdown();
             }
-        }
-
-        [TestMethod]
-        public void RegexTest()
-        {
-            Assert.AreEqual(3239, SeriesInformation.GetSeriesCodeFromImageUrl("https://static.sdarot.to/series/3239.jpg"));
         }
     }
 }

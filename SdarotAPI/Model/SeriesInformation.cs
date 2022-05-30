@@ -15,6 +15,14 @@ namespace SdarotAPI.Model
         public int SeriesCode { get; set; }
         public string ImageUrl { get; set; }
 
+        public SeriesInformation(string seriesNameHe, string seriesNameEn, string imageUrl)
+        {
+            SeriesNameHe = seriesNameHe;
+            SeriesNameEn = seriesNameEn;
+            ImageUrl = imageUrl;
+            SeriesCode = GetSeriesCodeFromImageUrl(ImageUrl);
+        }
+
         public SeriesInformation(string seriesFullName, string imageUrl)
         {
             var names = seriesFullName.Split('/');

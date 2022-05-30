@@ -1,8 +1,10 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using SdarotAPI.Exceptions;
 using SdarotAPI.Model;
 using SdarotAPI.Resources;
+using System.Collections.ObjectModel;
 
 namespace SdarotAPI;
 
@@ -31,36 +33,70 @@ public class SdarotDriver
         }
     }
 
+    public async Task NavigateAsync(string url)
+    {
+        await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
+    }
+
+    public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
+    {
+        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(e => e.FindElement(by)));
+    }
+
+    public async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
+    {
+        return await Task.Run(() => context.FindElement(by));
+    }
+
+    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
+    {
+        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(e => e.FindElements(by)));
+    }
+
+    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
+    {
+        return await Task.Run(() => context.FindElements(by));
+    }
+
     public void Shutdown()
     {
         webDriver?.Quit();
     }
 
-    public SeriesInformation[] SearchSeries(string searchQuery)
+    public async Task<SeriesInformation[]> SearchSeries(string searchQuery)
     {
         if (webDriver is null)
         {
             throw new DriverNotInitializedException();
         }
-        webDriver.Navigate().GoToUrl($"{Constants.SearchUrl}{searchQuery}");
+        await NavigateAsync($"{Constants.SearchUrl}{searchQuery}");
 
         // In case there is only one result
         if (webDriver.Url.StartsWith(Constants.WatchUrl))
         {
-            string seriesName = webDriver.FindElement(By.XPath("//*[@id=\"watchEpisode\"]/div[1]/div/h1/strong")).Text.Trim(new char[]  { ' ', '/' });
-            string imageUrl = webDriver.FindElement(By.XPath("//*[@id=\"watchEpisode\"]/div[2]/div/div[1]/div[1]/img")).GetAttribute("src");
+            string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[]  { ' ', '/' });
+            string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
         
-        var results = webDriver.FindElements(By.CssSelector("div.col-lg-2.col-md-2.col-sm-4.col-xs-6"));
+        var results = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SearchPageResult));
 
         // In case there are no results
         if (results.Count == 0)
         {
-            return new SeriesInformation[0];
+            return Array.Empty<SeriesInformation>();
         }
 
         // In case there are more than one result
-        throw new NotImplementedException();
+        var seriesList = new List<SeriesInformation>();
+        foreach (var result in results)
+        {
+            string seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).Text;
+            string seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).Text;
+            string imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
+            seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
+        }
+
+        return seriesList.ToArray();
     }
 }
