@@ -13,15 +13,7 @@ namespace SdarotAPITest
             try
             {
                 driver.Initialize(false);
-                var res = driver.SearchSeries("בין השמשות")[0];
-                Assert.AreEqual(
-                    res.SeriesNameHe,
-                    "בין השמשות"
-                );
-                Assert.AreEqual(
-                    res.ImageUrl,
-                    "https://static.sdarot.to/series/3239.jpg"
-                );
+                var res = driver.SearchSeries("jdlfknbaklesjf");
             }
             finally
             {
