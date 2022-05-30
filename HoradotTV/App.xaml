@@ -1,17 +1,28 @@
 ﻿<Application x:Class="HoradotTV.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:HoradotTV"
-             StartupUri="Views/StartupWindow.xaml">
+             StartupUri="View/StartupWindow.xaml"
+             Exit="Application_Exit">
     <Application.Resources>
         <FontFamily x:Key="Assistant">pack://application:,,,/Fonts/#Assistant</FontFamily>
-        
+
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Assistant}"/>
+        </Style>
+
         <Style TargetType="Button">
             <Setter Property="Height" Value="30"/>
             <Setter Property="Width" Value="100"/>
             <Setter Property="FontSize" Value="17"/>
-            <Setter Property="FontFamily" Value="{StaticResource Assistant}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Style.Resources>
+                <Style TargetType="Path">
+                    <Setter Property="FlowDirection" Value="LeftToRight"/>
+                </Style>
+            </Style.Resources>
         </Style>
     </Application.Resources>
 </Application>

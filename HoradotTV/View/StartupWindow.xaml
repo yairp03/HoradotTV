@@ -1,26 +1,30 @@
-﻿<Window x:Class="HoradotTV.Views.StartupWindow"
+﻿<Window x:Class="HoradotTV.View.StartupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HoradotTV.Views"
-        xmlns:vms="clr-namespace:HoradotTV.ViewModels"
+        xmlns:viewmodel="clr-namespace:HoradotTV.ViewModel"
         xmlns:converters="clr-namespace:HoradotTV.Converters"
         mc:Ignorable="d" FlowDirection="RightToLeft"
         Title="StartupWindow" Height="525" Width="700">
     <Window.DataContext>
-        <vms:StartupChecksViewModel/>
+        <viewmodel:StartupChecksViewModel/>
     </Window.DataContext>
     <Window.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter"/>
     </Window.Resources>
-    <Grid Margin="10 30">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ItemsControl ItemsSource="{Binding ChecksGroups}" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ItemsControl ItemsSource="{Binding ChecksGroups}" Grid.ColumnSpan="2">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Margin="20 0" CornerRadius="15" BorderBrush="Black" Background="LightGray" BorderThickness="1">
@@ -32,7 +36,7 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Image Source="{Binding ImageUri}"/>
-                            <Label Content="{Binding DisplayText}" ContentStringFormat="{}{0}..." Grid.Row="1" FontSize="20" HorizontalAlignment="Center"/>
+                            <Label Content="{Binding DisplayText}" Visibility="{Binding DisplayText, Converter={StaticResource StringToVisibilityConverter}}" ContentStringFormat="{}{0}..." Grid.Row="1" FontSize="20" HorizontalAlignment="Center"/>
                             <StackPanel Grid.Row="2">
                                 <ProgressBar IsIndeterminate="True" Height="30" Margin="20 0" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <Image Source="/Resources/Images/green-check.png" Height="50" Visibility="{Binding IsDone, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -51,9 +55,10 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
-            <Button Margin="70 0" Command="{Binding RunChecksCommand}" Content="בדוק שוב"/>
-            <Button Margin="70 0" Command="{Binding ProceedCommand}" Content="המשך"/>
+        <Button Grid.Row="1" Margin="0 15 0 10" Command="{Binding RunChecksCommand}" Content="בדוק שוב" IsEnabled="{Binding IsNotBusy}"/>
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Command="{Binding ProceedCommand}" Content="המשך" IsEnabled="{Binding IsDone}"/>
+            <CheckBox VerticalAlignment="Center" Margin="15 0" Content="המשך תמיד" IsChecked="{Binding AutoProceed}" Command="{Binding CheckBoxChangedCommand}"/>
         </StackPanel>
     </Grid>
 </Window>
