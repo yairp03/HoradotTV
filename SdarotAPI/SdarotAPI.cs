@@ -25,7 +25,7 @@ public class SdarotDriver
         }
         webDriver = new ChromeDriver(options);
 
-        webDriver.Navigate().GoToUrl(Constants.WatchUrl);
+        webDriver.Navigate().GoToUrl(Constants.SdarotUrls.WatchUrl);
 
         if (webDriver.Title == "Privacy error")
         {
@@ -36,6 +36,11 @@ public class SdarotDriver
     public async Task NavigateAsync(string url)
     {
         await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
+    }
+
+    public async Task NavigateToSeriesAsync(SeriesInformation series)
+    {
+        await NavigateAsync($"{Constants.SdarotUrls.WatchUrl}{series.SeriesCode}");
     }
 
     public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
@@ -69,10 +74,10 @@ public class SdarotDriver
         {
             throw new DriverNotInitializedException();
         }
-        await NavigateAsync($"{Constants.SearchUrl}{searchQuery}");
+        await NavigateAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
 
         // In case there is only one result
-        if (webDriver.Url.StartsWith(Constants.WatchUrl))
+        if (webDriver.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
             string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[]  { ' ', '/' });
             string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
@@ -98,5 +103,12 @@ public class SdarotDriver
         }
 
         return seriesList.ToArray();
+    }
+
+    public async Task<SeasonInformation[]> GetSeasonsAsync(SeriesInformation series)
+    {
+        await NavigateToSeriesAsync(series);
+
+        throw new NotImplementedException();
     }
 }
