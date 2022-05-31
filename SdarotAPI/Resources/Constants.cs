@@ -5,10 +5,11 @@ internal static class Constants
     public static class SdarotUrls
     {
         public const string BaseDomain = "sdarot.to";
-        public const string HomeUrl = $"https://www.{BaseDomain}/";
+        public const string HomeUrl = $"https://{BaseDomain}/";
         public const string SearchUrl = $"{HomeUrl}search?term=";
         public const string WatchUrl = $"{HomeUrl}watch/";
         public const string ImageUrl = $"https://static.{BaseDomain}/series/";
+        public const string TestUrl = $"{WatchUrl}1";
     }
 
     public static class XPathSelectors
@@ -23,5 +24,7 @@ internal static class Constants
         public const string SearchPageResultInnerSeriesNameHe = "div/div/h4";
         // content/description/nameEn
         public const string SearchPageResultInnerSeriesNameEn = "div/div/h5";
+        // Seasons/season
+        public const string SeriesPageSeason = "//*[@id=\"season\"]/li";
     }
 }

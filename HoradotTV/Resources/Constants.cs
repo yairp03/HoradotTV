@@ -2,5 +2,5 @@
 
 internal static class Constants
 {
-    public const string SdarotTestUrl = "https://www.sdarot.to/watch";
+    public const string SdarotTestUrl = "https://sdarot.to/watch/1";
 }

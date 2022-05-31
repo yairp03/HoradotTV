@@ -14,7 +14,8 @@ namespace SdarotAPITest
             {
                 driver.Initialize(false);
                 var res = await driver.SearchSeries("שמש");
-                Assert.AreEqual(res.Length, 15);
+                var res2 = await driver.GetSeasonsAsync(res[0]);
+                Assert.AreEqual(res2.Length, 6);
             }
             finally
             {

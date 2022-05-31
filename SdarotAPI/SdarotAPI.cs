@@ -25,7 +25,14 @@ public class SdarotDriver
         }
         webDriver = new ChromeDriver(options);
 
-        webDriver.Navigate().GoToUrl(Constants.SdarotUrls.WatchUrl);
+        try
+        {
+            webDriver.Navigate().GoToUrl(Constants.SdarotUrls.TestUrl);
+        }
+        catch (WebDriverException)
+        {
+            throw new SdarotBlockedException();
+        }
 
         if (webDriver.Title == "Privacy error")
         {
@@ -109,6 +116,16 @@ public class SdarotDriver
     {
         await NavigateToSeriesAsync(series);
 
-        throw new NotImplementedException();
+        var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
+        List<SeasonInformation> seasons = new();
+
+        foreach (var element in seasonElements)
+        {
+            int seasonNumber = int.Parse(element.GetAttribute("data-season"));
+            string seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            seasons.Add(new(seasonNumber, seasonName, series));
+        }
+
+        return seasons.ToArray();
     }
 }
