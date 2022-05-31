@@ -26,5 +26,7 @@ internal static class Constants
         public const string SearchPageResultInnerSeriesNameEn = "div/div/h5";
         // Seasons/season
         public const string SeriesPageSeason = "//*[@id=\"season\"]/li";
+        // Episodes/episode
+        public const string SeriesPageEpisode = "//*[@id=\"episode\"]/li";
     }
 }

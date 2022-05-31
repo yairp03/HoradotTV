@@ -14,7 +14,8 @@ public class ApiUnitTest
             driver.Initialize(false);
             var res = await driver.SearchSeries("שמש");
             var res2 = await driver.GetSeasonsAsync(res[0]);
-            Assert.AreEqual(res2.Length, 6);
+            var res3 = await driver.GetEpisodesAsync(res2[4]);
+            Assert.AreEqual(res3.Length, 25);
         }
         finally
         {

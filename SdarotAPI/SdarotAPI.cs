@@ -122,8 +122,8 @@ public class SdarotDriver
         await NavigateToSeriesAsync(series);
 
         var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
-        List<SeasonInformation> seasons = new();
 
+        List<SeasonInformation> seasons = new();
         foreach (var element in seasonElements)
         {
             int seasonNumber = int.Parse(element.GetAttribute("data-season"));
@@ -132,5 +132,22 @@ public class SdarotDriver
         }
 
         return seasons.ToArray();
+    }
+
+    public async Task<EpisodeInformation[]> GetEpisodesAsync(SeasonInformation season)
+    {
+        await NavigateToSeasonAsync(season);
+
+        var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
+
+        List<EpisodeInformation> episodes = new();
+        foreach (var element in episodeElements)
+        {
+            int episodeNumber = int.Parse(element.GetAttribute("data-episode"));
+            string episodeName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            episodes.Add(new(episodeNumber, episodeName, season));
+        }
+
+        return episodes.ToArray();
     }
 }
