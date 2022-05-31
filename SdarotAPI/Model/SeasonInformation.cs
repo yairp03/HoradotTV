@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace SdarotAPI.Model;
 
-namespace SdarotAPI.Model
+public class SeasonInformation
 {
-    public class SeasonInformation
-    {
-        public int SeasonIndex { get; set; }
-        public string SeasonName { get; set; }
+    public int SeasonNumber { get; set; }
+    public string SeasonName { get; set; }
+    public SeriesInformation Series { get; set; }
 
-        public SeasonInformation(int seasonIndex, string seasonName)
-        {
-            SeasonIndex = seasonIndex;
-            SeasonName = seasonName;
-        }
+    public string SeasonUrl => $"{Series.SeriesUrl}/season/{SeasonNumber}";
+
+    public SeasonInformation(int seasonNumber, string seasonName, SeriesInformation series)
+    {
+        SeasonNumber = seasonNumber;
+        SeasonName = seasonName;
+        Series = series;
     }
 }

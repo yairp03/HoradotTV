@@ -47,7 +47,12 @@ public class SdarotDriver
 
     public async Task NavigateToSeriesAsync(SeriesInformation series)
     {
-        await NavigateAsync($"{Constants.SdarotUrls.WatchUrl}{series.SeriesCode}");
+        await NavigateAsync(series.SeriesUrl);
+    }
+
+    public async Task NavigateToSeasonAsync(SeasonInformation season)
+    {
+        await NavigateAsync(season.SeasonUrl);
     }
 
     public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
