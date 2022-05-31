@@ -4,12 +4,14 @@ internal static class Constants
 {
     public static class SdarotUrls
     {
-        public const string BaseDomain = "sdarot.to";
-        public const string HomeUrl = $"https://{BaseDomain}/";
-        public const string SearchUrl = $"{HomeUrl}search?term=";
-        public const string WatchUrl = $"{HomeUrl}watch/";
-        public const string ImageUrl = $"https://static.{BaseDomain}/series/";
-        public const string TestUrl = $"{WatchUrl}1";
+        public const string SdarotUrlSource = "https://raw.githubusercontent.com/yairp03/HoradotTV/master/Resources/sdarot-url.txt";
+
+        public static string BaseDomain { get; set; } = "";
+        public static string HomeUrl => $"https://{BaseDomain}/";
+        public static string SearchUrl => $"{HomeUrl}search?term=";
+        public static string WatchUrl => $"{HomeUrl}watch/";
+        public static string ImageUrl => $"https://static.{BaseDomain}/series/";
+        public static string TestUrl => $"{WatchUrl}1";
     }
 
     public static class XPathSelectors

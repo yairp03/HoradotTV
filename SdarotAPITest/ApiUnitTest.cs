@@ -11,7 +11,7 @@ public class ApiUnitTest
         SdarotDriver driver = new();
         try
         {
-            driver.Initialize(false);
+            await driver.Initialize(false);
             var res = await driver.SearchSeries("שמש");
             var res2 = await driver.GetSeasonsAsync(res[0]);
             var res3 = await driver.GetEpisodesAsync(res2[4]);

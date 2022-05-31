@@ -16,7 +16,7 @@ public class SdarotDriver
     {
     }
 
-    public void Initialize(bool headless = true)
+    public async Task Initialize(bool headless = true)
     {
         var options = new ChromeOptions();
         if (headless)
@@ -24,6 +24,10 @@ public class SdarotDriver
             options.AddArgument("headless");
         }
         webDriver = new ChromeDriver(options);
+
+        HttpClient wc = new();
+        
+        Constants.SdarotUrls.BaseDomain = (await wc.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
 
         try
         {
