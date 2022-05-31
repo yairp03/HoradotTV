@@ -1,4 +1,5 @@
 ﻿using HoradotTV.Resources;
+using SdarotAPI;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ internal class SdarotConnectionCheck : IDependencyCheck
         {
             try
             {
-                var response = await client.GetAsync(Constants.SdarotTestUrl);
+                var response = await client.GetAsync(await GetSdarotTestUrl());
                 if (!response.IsSuccessStatusCode)
                 {
                     return false;
@@ -29,5 +30,10 @@ internal class SdarotConnectionCheck : IDependencyCheck
             }
         }
         return true;
+    }
+
+    public static async Task<string> GetSdarotTestUrl()
+    {
+        return $"https://{await SdarotDriver.RetrieveSdarotDomain()}/watch/1";
     }
 }

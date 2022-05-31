@@ -25,9 +25,7 @@ public class SdarotDriver
         }
         webDriver = new ChromeDriver(options);
 
-        HttpClient wc = new();
-        
-        Constants.SdarotUrls.BaseDomain = (await wc.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
+        Constants.SdarotUrls.BaseDomain = await RetrieveSdarotDomain();
 
         try
         {
@@ -42,6 +40,12 @@ public class SdarotDriver
         {
             throw new SdarotBlockedException();
         }
+    }
+
+    public static async Task<string> RetrieveSdarotDomain()
+    {
+        HttpClient wc = new();
+        return (await wc.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
     }
 
     public async Task NavigateAsync(string url)
