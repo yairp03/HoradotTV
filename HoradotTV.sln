@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoradotTV", "HoradotTV\HoradotTV.csproj", "{5F0A36DF-3600-4ED6-B51C-7F4DB7550761}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoradotTV", "HoradotTV\HoradotTV.csproj", "{5F0A36DF-3600-4ED6-B51C-7F4DB7550761}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdarotAPI", "SdarotAPI\SdarotAPI.csproj", "{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdarotAPITest", "SdarotAPITest\SdarotAPITest.csproj", "{F5E7F813-0F8E-4A82-A262-939F2A536AA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{5F0A36DF-3600-4ED6-B51C-7F4DB7550761}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F0A36DF-3600-4ED6-B51C-7F4DB7550761}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F0A36DF-3600-4ED6-B51C-7F4DB7550761}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5E7F813-0F8E-4A82-A262-939F2A536AA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5E7F813-0F8E-4A82-A262-939F2A536AA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5E7F813-0F8E-4A82-A262-939F2A536AA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5E7F813-0F8E-4A82-A262-939F2A536AA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
