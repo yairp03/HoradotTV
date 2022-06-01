@@ -5,11 +5,44 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewmodel="clr-namespace:HoradotTV.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        FlowDirection="RightToLeft" FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}"
+        Title="MainWindow" Height="600" Width="900">
     <Window.DataContext>
         <viewmodel:MainViewModel/>
     </Window.DataContext>
-    <Grid>
-        
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Background="{StaticResource AccentBrush}" Height="80">
+            <Image Source="/Resources/Images/sdarot-logo.png" Height="70"/>
+        </Border>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Label Grid.ColumnSpan="2" Content="שם סדרה או חלק ממנה:" FontSize="18" VerticalAlignment="Bottom" Margin="10 0"/>
+            <Border Grid.Row="1" Height="50" BorderThickness="2" BorderBrush="{StaticResource AccentBrush}" Margin="10 0" CornerRadius="10">
+                <TextBox Name="SearchTextBox" Margin="10 5" BorderThickness="0" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Text="{Binding SearchQuery}"/>
+            </Border>
+            <Button
+                Grid.Row="1" Grid.Column="1"
+                Height="50" Width="80" Margin="10 0"
+                Foreground="White" Content="חפש לי!" Background="{StaticResource AccentBrush}" BorderBrush="{StaticResource AccentBrush}"
+                Command="{Binding SearchSeriesCommand}" IsEnabled="{Binding IsNotBusy}">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
     </Grid>
 </Window>

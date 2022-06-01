@@ -15,12 +15,18 @@ public class SdarotDriver
 {
     ChromeDriver? webDriver;
 
+    public bool IsInitialized => webDriver is not null;
+
     public SdarotDriver()
     {
     }
 
     public async Task Initialize(bool headless = true)
     {
+        if (IsInitialized)
+        {
+            throw new DriverAlreadyInitializedException();
+        }
         var options = new ChromeOptions();
         if (headless)
         {
@@ -45,52 +51,52 @@ public class SdarotDriver
         }
     }
 
-    public async Task NavigateAsync(string url)
+    async Task NavigateAsync(string url)
     {
         await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
     }
 
-    public async Task NavigateToSeriesAsync(SeriesInformation series)
+    async Task NavigateToSeriesAsync(SeriesInformation series)
     {
         await NavigateAsync(series.SeriesUrl);
     }
 
-    public async Task NavigateToSeasonAsync(SeasonInformation season)
+    async Task NavigateToSeasonAsync(SeasonInformation season)
     {
         await NavigateAsync(season.SeasonUrl);
     }
 
-    public async Task NavigateToEpisodeAsync(EpisodeInformation episode)
+    async Task NavigateToEpisodeAsync(EpisodeInformation episode)
     {
         await NavigateAsync(episode.EpisodeUrl);
     }
 
-    public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
+    async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
     }
 
-    public static async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
+    static async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
     {
         return await Task.Run(() => context.FindElement(by));
     }
 
-    public async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 10)
+    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 10)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
     }
 
-    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
+    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
     }
 
-    public static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
+    static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
     {
         return await Task.Run(() => context.FindElements(by));
     }
 
-    public CookieContainer RetrieveCookies()
+    CookieContainer RetrieveCookies()
     {
         CookieContainer cookies = new();
         foreach (var cookie in webDriver!.Manage().Cookies.AllCookies)
@@ -102,19 +108,22 @@ public class SdarotDriver
 
     public void Shutdown()
     {
-        webDriver?.Quit();
+        if (IsInitialized)
+        {
+            webDriver?.Quit();
+        }
     }
 
     public async Task<SeriesInformation[]> SearchSeries(string searchQuery)
     {
-        if (webDriver is null)
+        if (!IsInitialized)
         {
             throw new DriverNotInitializedException();
         }
         await NavigateAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
 
         // In case there is only one result
-        if (webDriver.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
+        if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
             string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[]  { ' ', '/' });
             string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
@@ -144,6 +153,11 @@ public class SdarotDriver
 
     public async Task<SeasonInformation[]> GetSeasonsAsync(SeriesInformation series)
     {
+        if (!IsInitialized)
+        {
+            throw new DriverNotInitializedException();
+        }
+
         await NavigateToSeriesAsync(series);
 
         var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
@@ -162,6 +176,11 @@ public class SdarotDriver
 
     public async Task<EpisodeInformation[]> GetEpisodesAsync(SeasonInformation season)
     {
+        if (!IsInitialized)
+        {
+            throw new DriverNotInitializedException();
+        }
+
         await NavigateToSeasonAsync(season);
 
         var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
@@ -180,6 +199,11 @@ public class SdarotDriver
 
     public async Task<EpisodeInformation[]> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
     {
+        if (!IsInitialized)
+        {
+            throw new DriverNotInitializedException();
+        }
+
         var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season))[firstEpisode.EpisodeIndex..]);
         var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series))[(firstEpisode.Season.SeasonIndex + 1)..]);
 
@@ -204,6 +228,11 @@ public class SdarotDriver
 
     public async Task<EpisodeInformation[]> GetEpisodesAsync(SeriesInformation series)
     {
+        if (!IsInitialized)
+        {
+            throw new DriverNotInitializedException();
+        }
+
         var seasons = await GetSeasonsAsync(series);
 
         List<EpisodeInformation> episodes = new();
@@ -217,6 +246,11 @@ public class SdarotDriver
 
     public async Task<EpisodeMediaDetails?> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
     {
+        if (!IsInitialized)
+        {
+            throw new DriverNotInitializedException();
+        }
+
         await NavigateToEpisodeAsync(episode);
 
         // Wait for button to show up
