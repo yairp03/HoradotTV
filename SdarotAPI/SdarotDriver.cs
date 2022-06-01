@@ -27,12 +27,14 @@ public class SdarotDriver
         {
             throw new DriverAlreadyInitializedException();
         }
-        var options = new ChromeOptions();
+        ChromeDriverService driverService = ChromeDriverService.CreateDefaultService();
+        driverService.HideCommandPromptWindow = true;
+        ChromeOptions options = new();
         if (headless)
         {
             options.AddArgument("headless");
         }
-        webDriver = new ChromeDriver(options);
+        webDriver = new ChromeDriver(driverService, options);
 
         Constants.SdarotUrls.BaseDomain = await SdarotHelper.RetrieveSdarotDomain();
 
@@ -71,7 +73,7 @@ public class SdarotDriver
         await NavigateAsync(episode.EpisodeUrl);
     }
 
-    async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
+    async Task<IWebElement> FindElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
     }
@@ -81,12 +83,12 @@ public class SdarotDriver
         return await Task.Run(() => context.FindElement(by));
     }
 
-    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 10)
+    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
     }
 
-    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
+    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 2)
     {
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
     }
@@ -129,11 +131,15 @@ public class SdarotDriver
             string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
-        
-        var results = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SearchPageResult));
+        ReadOnlyCollection<IWebElement>? results = null;
+        try
+        {
+            results = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SearchPageResult));
+        }
+        catch (WebDriverTimeoutException) { }
 
         // In case there are no results
-        if (results.Count == 0)
+        if (results is null || results.Count == 0)
         {
             return Array.Empty<SeriesInformation>();
         }
