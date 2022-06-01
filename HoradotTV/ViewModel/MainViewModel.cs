@@ -106,18 +106,21 @@ internal partial class MainViewModel : BaseViewModel
     {
         IsBusy = true;
         SearchResults = null;
-        var seasons = await driver.GetSeasonsAsync(series);
-        SeriesSeasons = seasons;
+        SeasonEpisodes = null;
+        OnPropertyChanged(nameof(SeasonEpisodes));
+        SeriesSeasons = await driver.GetSeasonsAsync(series);
         SelectedSeries = series;
         IsBusy = false;
     }
 
     public async Task SeasonChanged()
     {
+        IsBusy = true;
         if (SelectedSeason is not null)
         {
             SeasonEpisodes = await driver.GetEpisodesAsync(SelectedSeason!);
             OnPropertyChanged(nameof(SeasonEpisodes));
         }
+        IsBusy = false;
     }
 }

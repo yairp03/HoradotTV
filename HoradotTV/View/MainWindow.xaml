@@ -151,11 +151,11 @@
                                 </UniformGrid.Resources>
                                 <StackPanel Visibility="{Binding IsNotSeriesMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Label Content="עונה:"/>
-                                    <ComboBox ItemsSource="{Binding SeriesSeasons}" DisplayMemberPath="SeasonName" SelectedItem="{Binding SelectedSeason}" SelectionChanged="ComboBox_SelectionChanged"/>
+                                    <ComboBox IsEnabled="{Binding IsNotBusy}" ItemsSource="{Binding SeriesSeasons}" DisplayMemberPath="SeasonName" SelectedItem="{Binding SelectedSeason}" SelectionChanged="ComboBox_SelectionChanged"/>
                                 </StackPanel>
                                 <StackPanel Visibility="{Binding IsEpisodesMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Label Content="פרק:"/>
-                                    <ComboBox ItemsSource="{Binding SeasonEpisodes}" DisplayMemberPath="EpisodeName" SelectedItem="{Binding SelectedEpisode}"/>
+                                    <ComboBox IsEnabled="{Binding IsNotBusy}" ItemsSource="{Binding SeasonEpisodes}" DisplayMemberPath="EpisodeName" SelectedItem="{Binding SelectedEpisode}"/>
                                 </StackPanel>
                             </UniformGrid>
                             <StackPanel Visibility="{Binding IsEpisodesMode, Converter={StaticResource BooleanToVisibilityConverter}}">
