@@ -4,7 +4,10 @@ using OpenQA.Selenium.Support.UI;
 using SdarotAPI.Exceptions;
 using SdarotAPI.Model;
 using SdarotAPI.Resources;
+using SeleniumExtras.WaitHelpers;
 using System.Collections.ObjectModel;
+using System.Net;
+using Cookie = System.Net.Cookie;
 
 namespace SdarotAPI;
 
@@ -25,7 +28,7 @@ public class SdarotDriver
         }
         webDriver = new ChromeDriver(options);
 
-        Constants.SdarotUrls.BaseDomain = await RetrieveSdarotDomain();
+        Constants.SdarotUrls.BaseDomain = await SdarotHelper.RetrieveSdarotDomain();
 
         try
         {
@@ -40,12 +43,6 @@ public class SdarotDriver
         {
             throw new SdarotBlockedException();
         }
-    }
-
-    public static async Task<string> RetrieveSdarotDomain()
-    {
-        HttpClient wc = new();
-        return (await wc.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
     }
 
     public async Task NavigateAsync(string url)
@@ -63,24 +60,44 @@ public class SdarotDriver
         await NavigateAsync(season.SeasonUrl);
     }
 
-    public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
+    public async Task NavigateToEpisodeAsync(EpisodeInformation episode)
     {
-        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(e => e.FindElement(by)));
+        await NavigateAsync(episode.EpisodeUrl);
     }
 
-    public async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
+    public async Task<IWebElement> FindElementAsync(By by, int timeout = 10)
+    {
+        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
+    }
+
+    public static async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
     {
         return await Task.Run(() => context.FindElement(by));
     }
 
-    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
+    public async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 10)
     {
-        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(e => e.FindElements(by)));
+        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
     }
 
-    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
+    public async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 10)
+    {
+        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
+    }
+
+    public static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
     {
         return await Task.Run(() => context.FindElements(by));
+    }
+
+    public CookieContainer RetrieveCookies()
+    {
+        CookieContainer cookies = new();
+        foreach (var cookie in webDriver!.Manage().Cookies.AllCookies)
+        {
+            cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
+        }
+        return cookies;
     }
 
     public void Shutdown()
@@ -132,11 +149,12 @@ public class SdarotDriver
         var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
 
         List<SeasonInformation> seasons = new();
-        foreach (var element in seasonElements)
+        for (int i = 0; i < seasonElements.Count; i++)
         {
+            var element = seasonElements[i];
             int seasonNumber = int.Parse(element.GetAttribute("data-season"));
             string seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
-            seasons.Add(new(seasonNumber, seasonName, series));
+            seasons.Add(new(seasonNumber, i, seasonName, series));
         }
 
         return seasons.ToArray();
@@ -149,13 +167,79 @@ public class SdarotDriver
         var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
 
         List<EpisodeInformation> episodes = new();
-        foreach (var element in episodeElements)
+        for (int i = 0; i < episodeElements.Count; i++)
         {
+            var element = episodeElements[i];
             int episodeNumber = int.Parse(element.GetAttribute("data-episode"));
             string episodeName = (await FindElementAsync(By.TagName("a"), element)).Text;
-            episodes.Add(new(episodeNumber, episodeName, season));
+            episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 
         return episodes.ToArray();
+    }
+
+    public async Task<EpisodeInformation[]> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
+    {
+        var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season))[firstEpisode.EpisodeIndex..]);
+        var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series))[(firstEpisode.Season.SeasonIndex + 1)..]);
+
+        List<EpisodeInformation> episodes = new();
+        for (int i = 0; i < maxEpisodeAmount; i++)
+        {
+            if (episodesBuffer.Count == 0)
+            {
+                if (seasonBuffer.Count == 0)
+                {
+                    break;
+                }
+                episodesBuffer = new(await GetEpisodesAsync(seasonBuffer.Dequeue()));
+                i--;
+                continue;
+            }
+            episodes.Add(episodesBuffer.Dequeue());
+        }
+
+       return episodes.ToArray();
+    }
+
+    public async Task<EpisodeInformation[]> GetEpisodesAsync(SeriesInformation series)
+    {
+        var seasons = await GetSeasonsAsync(series);
+
+        List<EpisodeInformation> episodes = new();
+        foreach (var season in seasons)
+        {
+            episodes.AddRange(await GetEpisodesAsync(season));
+        }
+
+        return episodes.ToArray();
+    }
+
+    public async Task<EpisodeMediaDetails?> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
+    {
+        await NavigateToEpisodeAsync(episode);
+
+        // Wait for button to show up
+        float currSeconds = Constants.WaitTime;
+        while (currSeconds > 0)
+        {
+            float newSeconds = float.Parse((await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime))).Text);
+            if (newSeconds != currSeconds)
+            {
+                currSeconds = newSeconds;
+                if (progress != null)
+                {
+                    progress.Report(currSeconds);
+                }
+            }
+        }
+
+        // Click button
+        (await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId))).Click();
+
+        string mediaUrl = (await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia))).GetAttribute("src");
+        CookieContainer cookies = RetrieveCookies();
+
+        return new EpisodeMediaDetails(mediaUrl, cookies);
     }
 }

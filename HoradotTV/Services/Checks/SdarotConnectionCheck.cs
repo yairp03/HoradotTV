@@ -14,26 +14,24 @@ internal class SdarotConnectionCheck : IDependencyCheck
     public async Task<bool> RunCheckAsync()
     {
         await Task.Delay(500);
-        using (var client = new HttpClient())
+        using var client = new HttpClient();
+        try
         {
-            try
-            {
-                var response = await client.GetAsync(await GetSdarotTestUrl());
-                if (!response.IsSuccessStatusCode)
-                {
-                    return false;
-                }
-            }
-            catch (HttpRequestException)
+            var response = await client.GetAsync(await GetSdarotTestUrl());
+            if (!response.IsSuccessStatusCode)
             {
                 return false;
             }
+            return true;
         }
-        return true;
+        catch (HttpRequestException)
+        {
+            return false;
+        }
     }
 
     public static async Task<string> GetSdarotTestUrl()
     {
-        return $"https://{await SdarotDriver.RetrieveSdarotDomain()}/watch/1";
+        return $"https://{await SdarotHelper.RetrieveSdarotDomain()}/watch/1";
     }
 }

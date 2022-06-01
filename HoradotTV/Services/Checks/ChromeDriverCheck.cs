@@ -12,11 +12,10 @@ internal class ChromeDriverCheck : IDependencyCheck
 
     public async Task<bool> RunCheckAsync()
     {
-        var chromeDriverInstaller = new ChromeDriverInstaller();
         try
         {
             await Task.Delay(800);
-            await chromeDriverInstaller.Install();
+            await ChromeDriverInstaller.Install();
         }
         catch (Exception ex)
         {

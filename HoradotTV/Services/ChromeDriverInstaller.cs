@@ -13,16 +13,16 @@ namespace HoradotTV.Services;
 
 public class ChromeDriverInstaller
 {
-    private static readonly HttpClient httpClient = new HttpClient
+    private static readonly HttpClient httpClient = new()
     {
         BaseAddress = new Uri("https://chromedriver.storage.googleapis.com/")
     };
 
-    public Task Install() => Install(null, false);
-    public Task Install(string chromeVersion) => Install(chromeVersion, false);
-    public Task Install(bool forceDownload) => Install(null, forceDownload);
+    public static Task Install() => Install(null, false);
+    public static Task Install(string chromeVersion) => Install(chromeVersion, false);
+    public static Task Install(bool forceDownload) => Install(null, forceDownload);
 
-    public async Task Install(string? chromeVersion, bool forceDownload)
+    public static async Task Install(string? chromeVersion, bool forceDownload)
     {
         // Instructions from https://chromedriver.chromium.org/downloads/version-selection
         //   First, find out which version of Chrome you are using. Let's say you have Chrome 72.0.3626.81.
@@ -32,7 +32,7 @@ public class ChromeDriverInstaller
         }
 
         //   Take the Chrome version number, remove the last part, 
-        chromeVersion = chromeVersion.Substring(0, chromeVersion.LastIndexOf('.'));
+        chromeVersion = chromeVersion[..chromeVersion.LastIndexOf('.')];
 
         //   and append the result to URL "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_". 
         //   For example, with Chrome version 72.0.3626.81, you'd get a URL "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_72.0.3626".
@@ -151,7 +151,7 @@ public class ChromeDriverInstaller
         }
     }
 
-    public async Task<string> GetChromeVersion()
+    public static async Task<string> GetChromeVersion()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
