@@ -15,7 +15,7 @@ internal class ChromeDownloadCheck : IDependencyCheck
         try
         {
             await Task.Delay(800);
-            await new ChromeDriverInstaller().GetChromeVersion();
+            await ChromeDriverInstaller.GetChromeVersion();
         }
         catch (Exception ex)
         {

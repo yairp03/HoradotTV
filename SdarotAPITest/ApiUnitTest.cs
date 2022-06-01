@@ -12,10 +12,20 @@ public class ApiUnitTest
         try
         {
             await driver.Initialize(false);
-            var res = await driver.SearchSeries("שמש");
-            var res2 = await driver.GetSeasonsAsync(res[0]);
-            var res3 = await driver.GetEpisodesAsync(res2[4]);
-            Assert.AreEqual(res3.Length, 25);
+            var series = (await driver.SearchSeries("שמש"))[0];
+            var seasons = await driver.GetSeasonsAsync(series);
+
+            var season2 = await driver.GetEpisodesAsync(seasons[1]);
+            Assert.AreEqual(season2.Length, 22);
+
+            var episodes = await driver.GetEpisodesAsync(season2[10], 40);
+            Assert.AreEqual(episodes.Length, 40);
+
+            var seriesEpisodes = await driver.GetEpisodesAsync(series);
+            Assert.AreEqual(seriesEpisodes.Length, 142);
+
+            var episode = await driver.GetEpisodeMediaDetailsAsync(episodes[0]) ?? throw new ArgumentNullException();
+            await SdarotHelper.DownloadEpisode(episode, @"C:\Users\yairp\Desktop\episode.mp4");
         }
         finally
         {

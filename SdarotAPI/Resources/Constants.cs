@@ -30,5 +30,15 @@ internal static class Constants
         public const string SeriesPageSeason = "//*[@id=\"season\"]/li";
         // Episodes/episode
         public const string SeriesPageEpisode = "//*[@id=\"episode\"]/li";
+        // WaitTime/container
+        public const string SeriesPageEpisodeWaitTime = "//*[@id=\"waitTime\"]/span";
     }
+
+    public static class IdSelectors
+    {
+        public const string ProceedButtonId = "proceed";
+        public const string EpisodeMedia = "videojs_html5_api";
+    }
+
+    public const int WaitTime = 30;
 }
