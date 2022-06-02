@@ -40,7 +40,7 @@ public class SdarotDriver
 
         try
         {
-            webDriver.Navigate().GoToUrl(Constants.SdarotUrls.TestUrl);
+            await NavigateAsync(Constants.SdarotUrls.TestUrl);
         }
         catch (WebDriverException)
         {
