@@ -50,6 +50,9 @@ internal partial class MainViewModel : BaseViewModel
     [ObservableProperty]
     EpisodeInformation? selectedEpisode;
 
+    [ObservableProperty]
+    int episodesAmount = 1;
+
     public MainViewModel()
     {
         ModeArray.CollectionChanged += ModeArray_CollectionChanged;
@@ -57,8 +60,18 @@ internal partial class MainViewModel : BaseViewModel
 
     private void ModeArray_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+        IsBusy = true;
+        if (SelectedMode == 0)
+        {
+            EpisodesAmount = 1;
+        }
+        if (SelectedMode == 1 && SeasonEpisodes is not null)
+        {
+            EpisodesAmount = SeasonEpisodes.Length;
+        }
         OnPropertyChanged(nameof(IsNotSeriesMode));
         OnPropertyChanged(nameof(IsEpisodesMode));
+        IsBusy = false;
     }
 
     public async Task Initialize()
@@ -119,6 +132,10 @@ internal partial class MainViewModel : BaseViewModel
         if (SelectedSeason is not null)
         {
             SeasonEpisodes = await driver.GetEpisodesAsync(SelectedSeason!);
+            if (SelectedMode == 1)
+            {
+                EpisodesAmount = SeasonEpisodes.Length;
+            }
             OnPropertyChanged(nameof(SeasonEpisodes));
         }
         IsBusy = false;

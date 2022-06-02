@@ -56,8 +56,8 @@
         </Grid>
         <Border Grid.Row="2" BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" CornerRadius="10" Margin="10">
             <Grid>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl Visibility="{Binding SearchPicker, Converter={StaticResource BooleanToVisibilityConverter}}" ItemsSource="{Binding SearchResults}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding SearchPicker, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                    <ItemsControl ItemsSource="{Binding SearchResults}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -158,9 +158,9 @@
                                     <ComboBox IsEnabled="{Binding IsNotBusy}" ItemsSource="{Binding SeasonEpisodes}" DisplayMemberPath="EpisodeName" SelectedItem="{Binding SelectedEpisode}"/>
                                 </StackPanel>
                             </UniformGrid>
-                            <StackPanel Visibility="{Binding IsEpisodesMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Visibility="{Binding IsNotSeriesMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Label Content="כמות פרקים:" HorizontalAlignment="Center"/>
-                                <xctk:IntegerUpDown Value="1" Margin="0 0 0 10" Width="100" FontSize="14"/>
+                                <xctk:IntegerUpDown Value="{Binding EpisodesAmount}" Minimum="1" IsEnabled="{Binding IsEpisodesMode}" Margin="0 0 0 10" Width="100" FontSize="14"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
