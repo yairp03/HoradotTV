@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SdarotAPI;
 using SdarotAPI.Model;
+using Syroot.Windows.IO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -53,8 +54,15 @@ internal partial class MainViewModel : BaseViewModel
     [ObservableProperty]
     int episodesAmount = 1;
 
+    [ObservableProperty]
+    string downloadLocation = Properties.Settings.Default.DownloadLocation;
+
     public MainViewModel()
     {
+        if (string.IsNullOrWhiteSpace(Properties.Settings.Default.DownloadLocation))
+        {
+            ChangeDownloadLocation(KnownFolders.Downloads.Path);
+        }
         ModeArray.CollectionChanged += ModeArray_CollectionChanged;
     }
 
@@ -105,7 +113,7 @@ internal partial class MainViewModel : BaseViewModel
         }
         else if (results.Length == 1)
         {
-            SelectSeries(results[0]);
+            await SelectSeries(results[0]);
         }
         else
         {
@@ -115,7 +123,7 @@ internal partial class MainViewModel : BaseViewModel
     }
 
     [ICommand]
-    private async void SelectSeries(SeriesInformation series)
+    private async Task SelectSeries(SeriesInformation series)
     {
         IsBusy = true;
         SearchResults = null;
@@ -139,5 +147,11 @@ internal partial class MainViewModel : BaseViewModel
             OnPropertyChanged(nameof(SeasonEpisodes));
         }
         IsBusy = false;
+    }
+
+    public void ChangeDownloadLocation(string newLocation)
+    {
+        Properties.Settings.Default.DownloadLocation = newLocation;
+        DownloadLocation = newLocation;
     }
 }

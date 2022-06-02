@@ -46,5 +46,17 @@ namespace HoradotTV.Properties {
                 this["IsCheckDelay"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DownloadLocation {
+            get {
+                return ((string)(this["DownloadLocation"]));
+            }
+            set {
+                this["DownloadLocation"] = value;
+            }
+        }
     }
 }
