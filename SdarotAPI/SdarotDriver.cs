@@ -93,11 +93,6 @@ public class SdarotDriver
         return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
     }
 
-    static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
-    {
-        return await Task.Run(() => context.FindElements(by));
-    }
-
     CookieContainer RetrieveCookies()
     {
         CookieContainer cookies = new();
@@ -148,8 +143,8 @@ public class SdarotDriver
         var seriesList = new List<SeriesInformation>();
         foreach (var result in results)
         {
-            string seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).Text;
-            string seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).Text;
+            string seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).GetAttribute("textContent");
+            string seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).GetAttribute("textContent");
             string imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
