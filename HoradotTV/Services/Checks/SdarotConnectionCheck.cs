@@ -13,7 +13,10 @@ internal class SdarotConnectionCheck : IDependencyCheck
 
     public async Task<bool> RunCheckAsync()
     {
-        await Task.Delay(500);
+        if (Properties.Settings.Default.IsCheckDelay)
+        {
+            await Task.Delay(500);
+        }
         using var client = new HttpClient();
         try
         {

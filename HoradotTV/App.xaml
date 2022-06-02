@@ -6,6 +6,12 @@
     <Application.Resources>
         <FontFamily x:Key="Assistant">pack://application:,,,/Fonts/#Assistant</FontFamily>
 
+        <!--Colors-->
+        <Color x:Key="Accent">#306FE0</Color>
+    
+        <!--Brushes-->
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"></SolidColorBrush>
+        
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Assistant}"/>
         </Style>

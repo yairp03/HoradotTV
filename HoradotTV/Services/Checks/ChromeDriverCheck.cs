@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HoradotTV.Resources;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -14,7 +15,10 @@ internal class ChromeDriverCheck : IDependencyCheck
     {
         try
         {
-            await Task.Delay(800);
+            if (Properties.Settings.Default.IsCheckDelay)
+            {
+                await Task.Delay(800);
+            }
             await ChromeDriverInstaller.Install();
         }
         catch (Exception ex)

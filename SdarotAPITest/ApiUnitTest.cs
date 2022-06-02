@@ -18,8 +18,8 @@ public class ApiUnitTest
             var season2 = await driver.GetEpisodesAsync(seasons[1]);
             Assert.AreEqual(season2.Length, 22);
 
-            var episodes = await driver.GetEpisodesAsync(season2[10], 40);
-            Assert.AreEqual(episodes.Length, 40);
+            var episodes = await driver.GetEpisodesAsync(season2[10], 150);
+            Assert.AreNotEqual(episodes.Length, 150);
 
             var seriesEpisodes = await driver.GetEpisodesAsync(series);
             Assert.AreEqual(seriesEpisodes.Length, 142);

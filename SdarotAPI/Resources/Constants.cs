@@ -7,7 +7,7 @@ internal static class Constants
         public const string SdarotUrlSource = "https://raw.githubusercontent.com/yairp03/HoradotTV/master/Resources/sdarot-url.txt";
 
         public static string BaseDomain { get; set; } = "";
-        public static string HomeUrl => $"https://{BaseDomain}/";
+        public static string HomeUrl => $"https://www.{BaseDomain}/";
         public static string SearchUrl => $"{HomeUrl}search?term=";
         public static string WatchUrl => $"{HomeUrl}watch/";
         public static string ImageUrl => $"https://static.{BaseDomain}/series/";

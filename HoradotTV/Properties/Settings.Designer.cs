@@ -34,5 +34,17 @@ namespace HoradotTV.Properties {
                 this["AutoCloseStartupPage"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsCheckDelay {
+            get {
+                return ((bool)(this["IsCheckDelay"]));
+            }
+            set {
+                this["IsCheckDelay"] = value;
+            }
+        }
     }
 }
