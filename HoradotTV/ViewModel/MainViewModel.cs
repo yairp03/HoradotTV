@@ -44,11 +44,13 @@ internal partial class MainViewModel : BaseViewModel
     public SeasonInformation[]? SeriesSeasons { get; set; }
 
     [ObservableProperty]
+    [AlsoNotifyChangeFor(nameof(CanDownload))]
     SeasonInformation? selectedSeason;
 
     public EpisodeInformation[]? SeasonEpisodes { get; set; }
 
     [ObservableProperty]
+    [AlsoNotifyChangeFor(nameof(CanDownload))]
     EpisodeInformation? selectedEpisode;
 
     [ObservableProperty]
@@ -56,6 +58,8 @@ internal partial class MainViewModel : BaseViewModel
 
     [ObservableProperty]
     string downloadLocation = Properties.Settings.Default.DownloadLocation;
+
+    public bool CanDownload => SelectedMode == 2 || (SelectedSeason is not null && (SelectedMode == 1 || (SelectedEpisode is not null && SelectedMode == 0)));
 
     public MainViewModel()
     {
@@ -68,15 +72,21 @@ internal partial class MainViewModel : BaseViewModel
 
     private void ModeArray_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+        ModeChanged();
+    }
+
+    private void ModeChanged()
+    {
         IsBusy = true;
         if (SelectedMode == 0)
         {
             EpisodesAmount = 1;
         }
-        if (SelectedMode == 1 && SeasonEpisodes is not null)
+        else if (SelectedMode == 1 && SeasonEpisodes is not null)
         {
             EpisodesAmount = SeasonEpisodes.Length;
         }
+        OnPropertyChanged(nameof(CanDownload));
         OnPropertyChanged(nameof(IsNotSeriesMode));
         OnPropertyChanged(nameof(IsEpisodesMode));
         IsBusy = false;
@@ -119,6 +129,9 @@ internal partial class MainViewModel : BaseViewModel
         {
             SearchResults = results;
         }
+        ModeArray[0] = true;
+        ModeArray[1] = false;
+        ModeArray[2] = false;
         IsBusy = false;
     }
 

@@ -8,9 +8,11 @@
 
         <!--Colors-->
         <Color x:Key="Accent">#306FE0</Color>
+        <Color x:Key="DownloadGreen">#087830</Color>
     
         <!--Brushes-->
         <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"></SolidColorBrush>
+        <SolidColorBrush x:Key="DownloadGreenBrush" Color="{StaticResource DownloadGreen}"></SolidColorBrush>
         
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Assistant}"/>
@@ -21,6 +23,11 @@
             <Setter Property="Width" Value="100"/>
             <Setter Property="FontSize" Value="17"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="10"/>
+                </Style>
+            </Style.Resources>
         </Style>
 
         <Style TargetType="CheckBox">

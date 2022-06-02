@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:converters="clr-namespace:HoradotTV.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -11,7 +10,7 @@
         xmlns:sdarotapi="clr-namespace:SdarotAPI.Model;assembly=SdarotAPI"
         mc:Ignorable="d"
         FlowDirection="RightToLeft" FocusManager.FocusedElement="{Binding ElementName=SearchTextBox}"
-        Title="MainWindow" Height="680" Width="990">
+        Title="MainWindow" Height="680" Width="1010">
     <Window.DataContext>
         <viewmodel:MainViewModel/>
     </Window.DataContext>
@@ -187,19 +186,34 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Label Content="מיקום הורדה:" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"/>
-                            <Label Grid.Row="1" HorizontalAlignment="Center" FontSize="18" FontWeight="SemiBold" Margin="0 5 0 0" FlowDirection="LeftToRight">
-                                <Label.Content>
-                                    <TextBlock>
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}\{1}">
-                                                <Binding Path="DownloadLocation"/>
-                                                <Binding Path="SelectedSeries.SeriesNameEn"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </Label.Content>
-                            </Label>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="130"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.ColumnSpan="2" Content="מיקום הורדה:" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"/>
+                            <Button Foreground="White" Grid.Row="1" Height="Auto" Margin="0 5 0 0" Width="60" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Background="{StaticResource AccentBrush}" Content="שנה">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="10 0 0 10"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                                <Border Grid.Column="1" Grid.Row="1" BorderThickness="1" BorderBrush="{StaticResource AccentBrush}" CornerRadius="0 10 10 0" Margin="0 5 0 0">
+                                <Label HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" FlowDirection="LeftToRight">
+                                    <Label.Content>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0}\{1}">
+                                                    <Binding Path="DownloadLocation"/>
+                                                    <Binding Path="SelectedSeries.SeriesNameEn"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Label.Content>
+                                </Label>
+                            </Border>
+                            <Button Content="הורד" IsEnabled="{Binding CanDownload}" Foreground="White" Grid.Column="2" Grid.RowSpan="2" Height="Auto" Background="{StaticResource DownloadGreenBrush}" BorderBrush="{StaticResource DownloadGreenBrush}"/>
                         </Grid>
                     </Border>
                 </Grid>
