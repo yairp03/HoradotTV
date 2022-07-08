@@ -1,6 +1,4 @@
-﻿using SdarotAPI;
-
-namespace SdarotAPITest;
+﻿namespace SdarotAPITest;
 
 [TestClass]
 public class ApiUnitTest
