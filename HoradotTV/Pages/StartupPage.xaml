@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HoradotTV.Pages.StartupPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:checks="clr-namespace:HoradotTV.Services.Checks"
+    xmlns:strings="clr-namespace:HoradotTV.Resources.Strings"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewmodels="clr-namespace:HoradotTV.ViewModels"
+    x:DataType="viewmodels:StartupViewModel">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:IsStringNotNullOrWhiteSpaceConverter x:Key="IsStringNotNullOrWhiteSpaceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding RunChecksCommand}" EventName="Appearing" />
+    </ContentPage.Behaviors>
+    <Grid
+        Margin="10"
+        ColumnDefinitions="*,*"
+        RowDefinitions="*,Auto">
+        <CollectionView ItemsLayout="VerticalGrid, 2" ItemsSource="{Binding ChecksGroups}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="checks:ChecksGroup">
+                    <Border
+                        Margin="20,0"
+                        Background="LightGray"
+                        HeightRequest="600"
+                        Stroke="Black"
+                        StrokeShape="RoundRectangle 15"
+                        StrokeThickness="1">
+                        <Grid Margin="25" RowDefinitions="*,*,*,*">
+                            <Image Source="{Binding ImageUri}" />
+                            <Label
+                                Grid.Row="1"
+                                FontSize="20"
+                                HorizontalTextAlignment="Center"
+                                IsVisible="{Binding DisplayText, Converter={StaticResource IsStringNotNullOrWhiteSpaceConverter}}"
+                                Text="{Binding DisplayText, StringFormat='{}{0}...'}" />
+                            <Grid Grid.Row="2">
+                                <ActivityIndicator Margin="20,0" IsEnabled="{Binding IsBusy}" />
+                                <Image
+                                    HeightRequest="50"
+                                    IsVisible="{Binding IsSuccess}"
+                                    Source="green_check.png" />
+                                <Image
+                                    HeightRequest="60"
+                                    IsVisible="{Binding IsFail}"
+                                    Source="green_check.png" />
+                            </Grid>
+                            <Button
+                                Grid.Row="3"
+                                Margin="0,10"
+                                Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewmodels:StartupViewModel}}, Path=FixProblemCommand}"
+                                IsVisible="{Binding IsFail}"
+                                Text="{x:Static strings:AppResource.Fix}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

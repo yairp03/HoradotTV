@@ -1,95 +1,94 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <UserSecretsId>4f963ee6-d15e-45d9-8144-139164917d47</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+		<OutputType>Exe</OutputType>
+		<RootNamespace>HoradotTV</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
 
-  <ItemGroup>
-    <None Remove="Fonts\Assistant-Bold.ttf" />
-    <None Remove="Fonts\Assistant-ExtraBold.ttf" />
-    <None Remove="Fonts\Assistant-ExtraLight.ttf" />
-    <None Remove="Fonts\Assistant-Light.ttf" />
-    <None Remove="Fonts\Assistant-Medium.ttf" />
-    <None Remove="Fonts\Assistant-Regular.ttf" />
-    <None Remove="Fonts\Assistant-SemiBold.ttf" />
-    <None Remove="Resources\Images\chrome-logo.png" />
-    <None Remove="Resources\Images\green-check.png" />
-    <None Remove="Resources\Images\red-x.png" />
-    <None Remove="Resources\Images\sdarot-logo.png" />
-  </ItemGroup>
+		<!-- Display name -->
+		<ApplicationTitle>HoradotTV</ApplicationTitle>
 
-  <ItemGroup>
-    <Resource Include="Fonts\Assistant-Light.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-ExtraLight.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-ExtraBold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-Bold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-Medium.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-Regular.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Assistant-SemiBold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Resources\Images\green-check.png" />
-    <Resource Include="Resources\Images\red-x.png" />
-    <Resource Include="Resources\Images\sdarot-logo.png" />
-  </ItemGroup>
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.horadottv</ApplicationId>
+		<ApplicationIdGuid>64CD84BD-8018-44AD-A838-C1F0791870D6</ApplicationIdGuid>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview3" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.3.0" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="Refractored.MvvmHelpers" Version="1.6.2" />
-    <PackageReference Include="Syroot.Windows.IO.KnownFolders" Version="1.3.0" />
-  </ItemGroup>
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SdarotAPI\SdarotAPI.csproj" />
-  </ItemGroup>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Resource Include="Resources\Images\chrome-logo.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
 
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Resources\Images\chrome_logo.png" />
+	  <None Remove="Resources\Images\green_check.png" />
+	  <None Remove="Resources\Images\red_x.png" />
+	  <None Remove="Resources\Images\sdarot_logo.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="CommunityToolkit.Maui" Version="1.0.0" />
+	  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview4" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SdarotAPI\SdarotAPI.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Resources\Strings\AppResource.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>AppResource.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Resources\Strings\AppResource.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>AppResource.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Pages\MainPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\StartupPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
 
 </Project>

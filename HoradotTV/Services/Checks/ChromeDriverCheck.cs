@@ -1,31 +1,23 @@
-﻿using HoradotTV.Resources;
-using System;
-using System.Threading.Tasks;
-using System.Windows;
+﻿namespace HoradotTV.Services.Checks;
 
-namespace HoradotTV.Services.Checks;
-
-internal class ChromeDriverCheck : IDependencyCheck
+internal class ChromeDriverCheck : ICheck
 {
-    public string LoadingText => "מוריד דרייבר לכרום";
+    public string LoadingText => AppResource.DownloadingChromeDriver;
 
-    public string FixProblemUrl => "https://github.com/yairp03/HoradotTV/wiki/Chrome-driver-problem";
+    public string FixProblemUrl => Constants.ChromeDriverFixUrl;
 
     public async Task<bool> RunCheckAsync()
     {
         try
         {
-            if (Properties.Settings.Default.IsCheckDelay)
-            {
-                await Task.Delay(800);
-            }
-            await ChromeDriverInstaller.Install();
+            await ChromeDriverHelper.Install();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            MessageBox.Show(ex.Message, "Exception when installing chrome driver");
+            // Error while downloading chrome driver
             return false;
         }
+
         return true;
     }
 }
