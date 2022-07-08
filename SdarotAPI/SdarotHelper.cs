@@ -1,8 +1,4 @@
-﻿using SdarotAPI.Extensions;
-using SdarotAPI.Model;
-using SdarotAPI.Resources;
-
-namespace SdarotAPI;
+﻿namespace SdarotAPI;
 
 public static class SdarotHelper
 {

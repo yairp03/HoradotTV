@@ -1,7 +1,4 @@
-﻿using SdarotAPI.Resources;
-using System.Text.RegularExpressions;
-
-namespace SdarotAPI.Model;
+﻿namespace SdarotAPI.Model;
 
 public class SeriesInformation
 {

@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace SdarotAPI.Model;
+﻿namespace SdarotAPI.Model;
 
 public class EpisodeMediaDetails
 {

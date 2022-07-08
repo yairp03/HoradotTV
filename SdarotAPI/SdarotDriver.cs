@@ -1,15 +1,4 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using SdarotAPI.Exceptions;
-using SdarotAPI.Model;
-using SdarotAPI.Resources;
-using SeleniumExtras.WaitHelpers;
-using System.Collections.ObjectModel;
-using System.Net;
-using Cookie = System.Net.Cookie;
-
-namespace SdarotAPI;
+﻿namespace SdarotAPI;
 
 public class SdarotDriver
 {
@@ -27,6 +16,9 @@ public class SdarotDriver
         {
             throw new DriverAlreadyInitializedException();
         }
+
+
+        await ChromeDriverHelper.Install();
 
         var driverService = ChromeDriverService.CreateDefaultService();
         driverService.HideCommandPromptWindow = true;
