@@ -117,8 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CheckAgain" xml:space="preserve">
+    <value>בדוק שוב</value>
+  </data>
   <data name="CheckingConnectionToSite" xml:space="preserve">
     <value>בודק חיבור לאתר</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>המשך</value>
+  </data>
+  <data name="ContinueAlways" xml:space="preserve">
+    <value>המשך תמיד</value>
   </data>
   <data name="DownloadingChromeDriver" xml:space="preserve">
     <value>מוריד דרייבר לכרום</value>

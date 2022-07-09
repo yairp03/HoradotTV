@@ -93,7 +93,7 @@ public partial class StartupViewModel : BaseViewModel
             return;
         IsBusy = true;
 
-        await Shell.Current.GoToAsync($"{nameof(MainPage)}");
+        await Shell.Current.GoToAsync($"//{nameof(MainPage)}", true);
 
         IsBusy = false;
     }

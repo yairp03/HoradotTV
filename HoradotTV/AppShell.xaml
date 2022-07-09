@@ -9,8 +9,13 @@
 
 
     <ShellContent
-        Title="HoradotTV"
-        ContentTemplate="{DataTemplate pages:StartupPage}}"
+        Title="Startup Page"
+        ContentTemplate="{DataTemplate pages:StartupPage}"
         Route="StartupPage" />
+
+    <ShellContent
+        Title="HoradotTV"
+        ContentTemplate="{DataTemplate pages:MainPage}"
+        Route="MainPage" />
 
 </Shell>

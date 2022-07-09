@@ -7,7 +7,9 @@
     xmlns:strings="clr-namespace:HoradotTV.Resources.Strings"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:viewmodels="clr-namespace:HoradotTV.ViewModels"
-    x:DataType="viewmodels:StartupViewModel">
+    x:DataType="viewmodels:StartupViewModel"
+    FlowDirection="RightToLeft"
+    Shell.NavBarIsVisible="False">
     <ContentPage.Resources>
         <ResourceDictionary>
             <toolkit:IsStringNotNullOrWhiteSpaceConverter x:Key="IsStringNotNullOrWhiteSpaceConverter" />
@@ -20,14 +22,15 @@
         Margin="10"
         ColumnDefinitions="*,*"
         RowDefinitions="*,Auto">
-        <CollectionView ItemsLayout="VerticalGrid, 2" ItemsSource="{Binding ChecksGroups}">
+        <CollectionView
+            Grid.ColumnSpan="2"
+            ItemsLayout="VerticalGrid, 2"
+            ItemsSource="{Binding ChecksGroups}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="checks:ChecksGroup">
                     <Border
-                        Margin="20,0"
-                        Background="LightGray"
-                        HeightRequest="600"
-                        Stroke="Black"
+                        Margin="50,10"
+                        HeightRequest="580"
                         StrokeShape="RoundRectangle 15"
                         StrokeThickness="1">
                         <Grid Margin="25" RowDefinitions="*,*,*,*">
@@ -39,7 +42,7 @@
                                 IsVisible="{Binding DisplayText, Converter={StaticResource IsStringNotNullOrWhiteSpaceConverter}}"
                                 Text="{Binding DisplayText, StringFormat='{}{0}...'}" />
                             <Grid Grid.Row="2">
-                                <ActivityIndicator Margin="20,0" IsEnabled="{Binding IsBusy}" />
+                                <ActivityIndicator IsRunning="{Binding IsBusy}" />
                                 <Image
                                     HeightRequest="50"
                                     IsVisible="{Binding IsSuccess}"
@@ -58,10 +61,29 @@
                                 VerticalOptions="Center" />
                         </Grid>
                     </Border>
-
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        <Button
+            Grid.Row="1"
+            Margin="0,15,0,10"
+            Command="{Binding RunChecksCommand}"
+            HeightRequest="50"
+            Text="{x:Static strings:AppResource.CheckAgain}"
+            WidthRequest="100" />
+        <HorizontalStackLayout
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalOptions="Center">
+            <Button
+                Command="{Binding ProceedCommand}"
+                HeightRequest="50"
+                IsEnabled="{Binding IsDone}"
+                Text="{x:Static strings:AppResource.Continue}"
+                WidthRequest="100" />
+            <CheckBox Margin="15,0,2,0" IsChecked="{Binding AutoProceed}" />
+            <Label Text="{x:Static strings:AppResource.ContinueAlways}" VerticalOptions="Center" />
+        </HorizontalStackLayout>
     </Grid>
 
 </ContentPage>

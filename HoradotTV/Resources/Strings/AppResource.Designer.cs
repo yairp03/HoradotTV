@@ -61,11 +61,38 @@ namespace HoradotTV.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to בדוק שוב.
+        /// </summary>
+        internal static string CheckAgain {
+            get {
+                return ResourceManager.GetString("CheckAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to בודק חיבור לאתר.
         /// </summary>
         internal static string CheckingConnectionToSite {
             get {
                 return ResourceManager.GetString("CheckingConnectionToSite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to המשך.
+        /// </summary>
+        internal static string Continue {
+            get {
+                return ResourceManager.GetString("Continue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to המשך תמיד.
+        /// </summary>
+        internal static string ContinueAlways {
+            get {
+                return ResourceManager.GetString("ContinueAlways", resourceCulture);
             }
         }
         
