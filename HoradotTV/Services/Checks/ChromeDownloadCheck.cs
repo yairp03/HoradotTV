@@ -8,6 +8,7 @@ internal class ChromeDownloadCheck : ICheck
 
     public async Task<bool> RunCheckAsync()
     {
+        await Task.Delay(500);
         try
         {
             await ChromeDriverHelper.GetChromeVersion();

@@ -8,6 +8,7 @@ internal class SdarotConnectionCheck : ICheck
 
     public async Task<bool> RunCheckAsync()
     {
+        await Task.Delay(500);
         using var client = new HttpClient();
         try
         {
