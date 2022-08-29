@@ -1,4 +1,4 @@
-﻿namespace SdarotAPI.Model;
+﻿namespace SdarotAPI.Models;
 
 public class SeasonInformation
 {

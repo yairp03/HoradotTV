@@ -4,7 +4,7 @@ global using OpenQA.Selenium.Chrome;
 global using OpenQA.Selenium.Support.UI;
 global using SdarotAPI.Exceptions;
 global using SdarotAPI.Extensions;
-global using SdarotAPI.Model;
+global using SdarotAPI.Models;
 global using SdarotAPI.Resources;
 global using SdarotAPI.Services;
 global using SeleniumExtras.WaitHelpers;
