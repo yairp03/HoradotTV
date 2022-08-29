@@ -117,8 +117,8 @@ public class SdarotDriver
         var seriesList = new List<SeriesInformation>();
         foreach (var result in results)
         {
-            var seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).Text;
-            var seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).Text;
+            var seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).GetAttribute("innerText");
+            var seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).GetAttribute("innerText");
             var imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
@@ -221,7 +221,7 @@ public class SdarotDriver
         return episodes.ToArray();
     }
 
-    public async Task<EpisodeMediaDetails?> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
+    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
     {
         if (!IsInitialized)
         {
