@@ -37,6 +37,7 @@ If you want to build the project from source, you can do that by using Visual St
 The GUI app is currently on hold. Contributors who are willing to help use the SdarotAPI library to build the GUI app are welcome to contact me.
 
 ## Future Development
+- Support for SratimTV
 - GUI app.
 - SdarotAPI for python.
 
