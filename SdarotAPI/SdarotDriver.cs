@@ -17,7 +17,6 @@ public class SdarotDriver
             throw new DriverAlreadyInitializedException();
         }
 
-
         await ChromeDriverHelper.Install();
 
         var driverService = ChromeDriverService.CreateDefaultService();
@@ -27,6 +26,7 @@ public class SdarotDriver
         {
             options.AddArgument("headless");
         }
+
         webDriver = new ChromeDriver(driverService, options);
 
         Constants.SdarotUrls.BaseDomain = await SdarotHelper.RetrieveSdarotDomain();
@@ -62,10 +62,7 @@ public class SdarotDriver
 
     async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
 
-    static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
-    {
-        return await Task.Run(() => context.FindElements(by));
-    }
+    static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElements(by));
 
     CookieContainer RetrieveCookies()
     {
@@ -74,6 +71,7 @@ public class SdarotDriver
         {
             cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
         }
+
         return cookies;
     }
 
@@ -91,15 +89,17 @@ public class SdarotDriver
         {
             throw new DriverNotInitializedException();
         }
+
         await NavigateAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
 
         // In case there is only one result
         if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
-            string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[] { ' ', '/' });
-            string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
+            var seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[] { ' ', '/' });
+            var imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
+
         ReadOnlyCollection<IWebElement>? results = null;
         try
         {
@@ -117,9 +117,9 @@ public class SdarotDriver
         var seriesList = new List<SeriesInformation>();
         foreach (var result in results)
         {
-            string seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).Text;
-            string seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).Text;
-            string imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
+            var seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).Text;
+            var seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).Text;
+            var imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
 
@@ -138,11 +138,11 @@ public class SdarotDriver
         var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
 
         List<SeasonInformation> seasons = new();
-        for (int i = 0; i < seasonElements.Count; i++)
+        for (var i = 0; i < seasonElements.Count; i++)
         {
             var element = seasonElements[i];
-            int seasonNumber = int.Parse(element.GetAttribute("data-season"));
-            string seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            var seasonNumber = int.Parse(element.GetAttribute("data-season"));
+            var seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
             seasons.Add(new(seasonNumber, i, seasonName, series));
         }
 
@@ -161,11 +161,11 @@ public class SdarotDriver
         var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
 
         List<EpisodeInformation> episodes = new();
-        for (int i = 0; i < episodeElements.Count; i++)
+        for (var i = 0; i < episodeElements.Count; i++)
         {
             var element = episodeElements[i];
-            int episodeNumber = int.Parse(element.GetAttribute("data-episode"));
-            string episodeName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            var episodeNumber = int.Parse(element.GetAttribute("data-episode"));
+            var episodeName = (await FindElementAsync(By.TagName("a"), element)).Text;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 
@@ -183,7 +183,7 @@ public class SdarotDriver
         var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series))[(firstEpisode.Season.SeasonIndex + 1)..]);
 
         List<EpisodeInformation> episodes = new();
-        for (int i = 0; i < maxEpisodeAmount; i++)
+        for (var i = 0; i < maxEpisodeAmount; i++)
         {
             if (episodesBuffer.Count == 0)
             {
@@ -191,10 +191,12 @@ public class SdarotDriver
                 {
                     break;
                 }
+
                 episodesBuffer = new(await GetEpisodesAsync(seasonBuffer.Dequeue()));
                 i--;
                 continue;
             }
+
             episodes.Add(episodesBuffer.Dequeue());
         }
 
@@ -229,26 +231,23 @@ public class SdarotDriver
         await NavigateToEpisodeAsync(episode);
 
         // Wait for button to show up
-        float currSeconds = Constants.WaitTime;
+        var currSeconds = (float)Constants.WaitTime;
         while (currSeconds > 0)
         {
-            float newSeconds = float.Parse((await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime))).Text);
+            var newSeconds = float.Parse((await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime))).Text);
             if (newSeconds != currSeconds)
             {
                 currSeconds = newSeconds;
-                if (progress != null)
-                {
-                    progress.Report(30 - currSeconds);
-                }
+                progress?.Report(30 - currSeconds);
             }
         }
 
         // Click button
         (await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId))).Click();
 
-        string mediaUrl = (await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia))).GetAttribute("src");
-        CookieContainer cookies = RetrieveCookies();
+        var mediaUrl = (await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia))).GetAttribute("src");
+        var cookies = RetrieveCookies();
 
-        return new EpisodeMediaDetails(mediaUrl, cookies);
+        return new EpisodeMediaDetails(mediaUrl, cookies, episode);
     }
 }
