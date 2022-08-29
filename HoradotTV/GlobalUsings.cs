@@ -8,4 +8,5 @@ global using HoradotTV.Services;
 global using HoradotTV.Services.Checks;
 global using HoradotTV.ViewModels;
 global using SdarotAPI;
+global using SdarotAPI.Models;
 global using SdarotAPI.Services;

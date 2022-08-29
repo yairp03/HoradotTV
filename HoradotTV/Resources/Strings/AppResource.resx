@@ -138,4 +138,10 @@
   <data name="Fix" xml:space="preserve">
     <value>תקן</value>
   </data>
+  <data name="Search" xml:space="preserve">
+    <value>חפש לי!</value>
+  </data>
+  <data name="SeriesNameOrPartOfIt" xml:space="preserve">
+    <value>שם סדרה או חלק ממנה</value>
+  </data>
 </root>

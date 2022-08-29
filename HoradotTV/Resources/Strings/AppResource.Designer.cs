@@ -122,5 +122,23 @@ namespace HoradotTV.Resources.Strings {
                 return ResourceManager.GetString("Fix", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to חפש לי!.
+        /// </summary>
+        internal static string Search {
+            get {
+                return ResourceManager.GetString("Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to שם סדרה או חלק ממנה.
+        /// </summary>
+        internal static string SeriesNameOrPartOfIt {
+            get {
+                return ResourceManager.GetString("SeriesNameOrPartOfIt", resourceCulture);
+            }
+        }
     }
 }
