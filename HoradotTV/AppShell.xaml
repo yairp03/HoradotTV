@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="HoradotTV.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:HoradotTV"
+    xmlns:pages="clr-namespace:HoradotTV.Pages"
+    Shell.FlyoutBehavior="Disabled">
+
+
+    <ShellContent
+        Title="Startup Page"
+        ContentTemplate="{DataTemplate pages:StartupPage}"
+        Route="StartupPage" />
+
+    <ShellContent
+        Title="HoradotTV"
+        ContentTemplate="{DataTemplate pages:MainPage}"
+        Route="MainPage" />
+
+</Shell>

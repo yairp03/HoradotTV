@@ -1,15 +1,4 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using SdarotAPI.Exceptions;
-using SdarotAPI.Model;
-using SdarotAPI.Resources;
-using SeleniumExtras.WaitHelpers;
-using System.Collections.ObjectModel;
-using System.Net;
-using Cookie = System.Net.Cookie;
-
-namespace SdarotAPI;
+﻿namespace SdarotAPI;
 
 public class SdarotDriver
 {
@@ -27,7 +16,11 @@ public class SdarotDriver
         {
             throw new DriverAlreadyInitializedException();
         }
-        ChromeDriverService driverService = ChromeDriverService.CreateDefaultService();
+
+
+        await ChromeDriverHelper.Install();
+
+        var driverService = ChromeDriverService.CreateDefaultService();
         driverService.HideCommandPromptWindow = true;
         ChromeOptions options = new();
         if (headless)
@@ -53,45 +46,21 @@ public class SdarotDriver
         }
     }
 
-    async Task NavigateAsync(string url)
-    {
-        await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
-    }
+    async Task NavigateAsync(string url) => await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
 
-    async Task NavigateToSeriesAsync(SeriesInformation series)
-    {
-        await NavigateAsync(series.SeriesUrl);
-    }
+    async Task NavigateToSeriesAsync(SeriesInformation series) => await NavigateAsync(series.SeriesUrl);
 
-    async Task NavigateToSeasonAsync(SeasonInformation season)
-    {
-        await NavigateAsync(season.SeasonUrl);
-    }
+    async Task NavigateToSeasonAsync(SeasonInformation season) => await NavigateAsync(season.SeasonUrl);
 
-    async Task NavigateToEpisodeAsync(EpisodeInformation episode)
-    {
-        await NavigateAsync(episode.EpisodeUrl);
-    }
+    async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
-    async Task<IWebElement> FindElementAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
-    }
+    async Task<IWebElement> FindElementAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
 
-    static async Task<IWebElement> FindElementAsync(By by, ISearchContext context)
-    {
-        return await Task.Run(() => context.FindElement(by));
-    }
+    static async Task<IWebElement> FindElementAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElement(by));
 
-    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
-    }
+    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
 
-    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
-    }
+    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
 
     static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context)
     {
@@ -127,7 +96,7 @@ public class SdarotDriver
         // In case there is only one result
         if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
-            string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[]  { ' ', '/' });
+            string seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[] { ' ', '/' });
             string imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
@@ -229,7 +198,7 @@ public class SdarotDriver
             episodes.Add(episodesBuffer.Dequeue());
         }
 
-       return episodes.ToArray();
+        return episodes.ToArray();
     }
 
     public async Task<EpisodeInformation[]> GetEpisodesAsync(SeriesInformation series)
@@ -269,7 +238,7 @@ public class SdarotDriver
                 currSeconds = newSeconds;
                 if (progress != null)
                 {
-                    progress.Report(currSeconds);
+                    progress.Report(30 - currSeconds);
                 }
             }
         }

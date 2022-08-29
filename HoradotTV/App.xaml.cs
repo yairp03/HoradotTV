@@ -1,15 +1,11 @@
-﻿using HoradotTV.Properties;
-using System.Windows;
+﻿namespace HoradotTV;
 
-namespace HoradotTV;
-
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application
 {
-    private void Application_Exit(object sender, ExitEventArgs e)
+    public App()
     {
-        Settings.Default.Save();
+        InitializeComponent();
+
+        MainPage = new AppShell();
     }
 }

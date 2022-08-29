@@ -1,32 +1,24 @@
-﻿using HoradotTV.Resources;
-using System;
-using System.Threading.Tasks;
-using System.Windows;
+﻿namespace HoradotTV.Services.Checks;
 
-namespace HoradotTV.Services.Checks;
-
-internal class ChromeDownloadCheck : IDependencyCheck
+internal class ChromeDownloadCheck : ICheck
 {
-    string IDependencyCheck.LoadingText => "מוודא התקנת כרום";
+    public string LoadingText => AppResource.EnsuringChromeDownload;
 
-    public string FixProblemUrl => "https://github.com/yairp03/HoradotTV/wiki/Chrome-download-problem";
+    public string FixProblemUrl => Constants.ChromeDownloadFixUrl;
 
     public async Task<bool> RunCheckAsync()
     {
+        await Task.Delay(500);
         try
         {
-            if (Properties.Settings.Default.IsCheckDelay)
-            {
-                await Task.Delay(800);
-            }
-            await ChromeDriverInstaller.GetChromeVersion();
+            await ChromeDriverHelper.GetChromeVersion();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            MessageBox.Show(ex.Message, "Error occured while looking up for chrome installation");
-            //got an error, probably chrome is not installed(not sure however).
+            // Chrome is not installed
             return false;
         }
+
         return true;
     }
 }
