@@ -182,6 +182,7 @@ internal class Program
                     failedEpisodes = (await DownloadEpisodes(driver, failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
                 }
 
+                SummarizeDownload(episodes.Count(), failedEpisodes);
                 IOHelpers.Print("\nDone. Returning to start.");
             }
 
@@ -191,6 +192,24 @@ internal class Program
 
         return null;
     }
+
+    static void SummarizeDownload(int total, IEnumerable<EpisodeInformation>? failed = null)
+    {
+        failed ??= Enumerable.Empty<EpisodeInformation>();
+        var success = total - failed.Count();
+        var successPercentage = (int)((double)success / total * 100);
+        IOHelpers.Print("\nDownload Summarize:");
+        IOHelpers.Print($"Total   = {total}");
+        IOHelpers.Print($"Success = {success}\t({successPercentage}%)");
+        IOHelpers.Print($"Fail    = {failed.Count()}\t({100 - successPercentage}%)");
+        if (failed.Any())
+        {
+            IOHelpers.Print($"Failed episodes:");
+            foreach (var episode in failed)
+            {
+                IOHelpers.Print($"\t{episode.Season.SeasonString} {episode.EpisodeString}");
+            }
+        }
     }
 
     static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
