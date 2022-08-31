@@ -220,11 +220,17 @@ internal class Program
             {
                 return await driver.GetEpisodeMediaDetailsAsync(episode);
             }
-            catch (WebDriverTimeoutException)
+            catch (Error2Exception)
+            {
+                IOHelpers.Print("Error 2, Skipping.");
+                return null;
+            }
+            catch
             {
                 if (retries > 0)
                     IOHelpers.Print($"Failed. Trying again... ({retries} tries left)");
                 retries--;
+
             }
         } while (retries > -1);
 
