@@ -22,9 +22,12 @@ internal static class ExitHelper
 
     public static void Initialize(Action shutDown)
     {
-        _handler += new EventHandler(Handler);
-        SetConsoleCtrlHandler(_handler, true);
-        func = shutDown;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            _handler += new EventHandler(Handler);
+            SetConsoleCtrlHandler(_handler, true);
+            func = shutDown;
+        }
     }
 
     public static bool Handler(CtrlType sig)
