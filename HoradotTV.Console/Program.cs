@@ -24,6 +24,7 @@ internal class Program
                 continue;
 
             var downloadLocation = GetDownloadLocation();
+            IOHelpers.Print("Full download path: " + Path.GetFullPath(downloadLocation));
 
             var mode = GetMode();
             if (mode == Modes.None)
