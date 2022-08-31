@@ -28,8 +28,8 @@ The easiest way to use the console app is through the release on Github:
 #### Running With Visual Studio
 If you want to build the project from source, you can do that by using Visual Studio:
 
-1. Open the `HoradotTV.Console.sln` file with Visual Studio.
-2. Select the console app as startup project.
+1. Open the `HoradotTV.sln` file with Visual Studio.
+2. Select the console app (`HoradotTV.Console`) as startup project.
 3. Press `F5` to run.
 
 
