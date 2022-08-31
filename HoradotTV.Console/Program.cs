@@ -147,18 +147,22 @@ internal class Program
     static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
     static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new EpisodeInformation[] { episode }, downloadLocation);
     static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
-    static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation[] episodes, string downloadLocation)
+    static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool retryFailed = true)
     {
         try
         {
-            for (var i = 0; i < episodes.Length; i++)
+            var failedEpisodes = new List<EpisodeInformation>();
+
+            var i = 0;
+            foreach (var episode in episodes)
             {
-                var episode = episodes[i];
-                IOHelpers.Print($"\n({i + 1}/{episodes.Length})");
+                i++;
+                IOHelpers.Print($"\n({i}/{episodes.Count()})");
                 IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
                 if (episodeMedia == null)
                 {
+                    failedEpisodes.Add(episode);
                     IOHelpers.Print("Failed. Proceeding to next episode.");
                     continue;
                 }
@@ -170,9 +174,23 @@ internal class Program
                 await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
             }
 
-            IOHelpers.Print("\nDone. Returning to start.");
+            if (retryFailed)
+            {
+                if (failedEpisodes.Count > 0)
+                {
+                    IOHelpers.Print($"\nFinished. Trying again {failedEpisodes.Count} failed episodes");
+                    failedEpisodes = (await DownloadEpisodes(driver, failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
+                }
+
+                IOHelpers.Print("\nDone. Returning to start.");
+            }
+
+            return failedEpisodes;
         }
         catch { }
+
+        return null;
+    }
     }
 
     static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
