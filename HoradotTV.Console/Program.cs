@@ -1,39 +1,7 @@
-﻿using System.Linq;
-
-namespace HoradotTV.Console;
+﻿namespace HoradotTV.Console;
 
 internal class Program
 {
-    [DllImport("Kernel32")]
-    private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
-
-    private delegate bool EventHandler(CtrlType sig);
-    static EventHandler? _handler;
-
-    enum CtrlType
-    {
-        CTRL_C_EVENT = 0,
-        CTRL_BREAK_EVENT = 1,
-        CTRL_CLOSE_EVENT = 2,
-        CTRL_LOGOFF_EVENT = 5,
-        CTRL_SHUTDOWN_EVENT = 6
-    }
-
-    private static bool Handler(CtrlType sig)
-    {
-        switch (sig)
-        {
-            case CtrlType.CTRL_C_EVENT:
-            case CtrlType.CTRL_LOGOFF_EVENT:
-            case CtrlType.CTRL_SHUTDOWN_EVENT:
-            case CtrlType.CTRL_CLOSE_EVENT:
-            default:
-                driver?.Shutdown();
-                break;
-        }
-
-        return true;
-    }
 
     static SdarotDriver? driver;
 
@@ -42,10 +10,10 @@ internal class Program
         IOHelpers.Print("Welcome to HoradotTV!");
         IOHelpers.Print("Initializing...");
 
-        _handler += new EventHandler(Handler);
-        SetConsoleCtrlHandler(_handler, true);
+        ExitHelper.Initialize(Shutdown);
         System.Console.InputEncoding = Encoding.Unicode;
         System.Console.OutputEncoding = Encoding.Unicode;
+
         driver = new SdarotDriver();
         await driver.Initialize();
 
@@ -180,26 +148,30 @@ internal class Program
     static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
     static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation[] episodes, string downloadLocation)
     {
-        for (var i = 0; i < episodes.Length; i++)
+        try
         {
-            var episode = episodes[i];
-            IOHelpers.Print($"\n({i + 1}/{episodes.Length})");
-            IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
-            var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
-            if (episodeMedia == null)
+            for (var i = 0; i < episodes.Length; i++)
             {
-                IOHelpers.Print("Failed. Proceeding to next episode.");
-                continue;
+                var episode = episodes[i];
+                IOHelpers.Print($"\n({i + 1}/{episodes.Length})");
+                IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
+                var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
+                if (episodeMedia == null)
+                {
+                    IOHelpers.Print("Failed. Proceeding to next episode.");
+                    continue;
+                }
+
+                IOHelpers.Print($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
+                var cleanSeriesName = string.Concat(episode.Series.SeriesNameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
+                var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
+                Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
+                await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
             }
 
-            IOHelpers.Print($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
-            var cleanSeriesName = string.Concat(episode.Series.SeriesNameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
-            var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
-            Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
-            await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
+            IOHelpers.Print("\nDone. Returning to start.");
         }
-
-        IOHelpers.Print("\nDone. Returning to start.");
+        catch { }
     }
 
     static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
@@ -219,5 +191,11 @@ internal class Program
         } while (retries > -1);
 
         return null;
+    }
+
+    static void Shutdown()
+    {
+        driver?.Shutdown();
+        Environment.Exit(0);
     }
 }
