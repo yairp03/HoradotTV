@@ -34,13 +34,15 @@ If you want to build the project from source, you can do that by using Visual St
 
 
 ## GUI App
-The GUI app is currently on hold. Contributors who are willing to help use the SdarotAPI library to build the GUI app are welcome to contact me.
+The GUI app is currently on hold.  
+Contributors who are willing to help use the SdarotAPI library to build the GUI app are welcome to contact me.
 
 ## Future Development
-- Support for SratimTV
+- Support for SratimTV.
 - GUI app.
 - SdarotAPI for python.
 
 ## Contributing
+If the url for SdarotTV changed, please fork the repo, change the [sdarot-url.txt](https://github.com/yairp03/HoradotTV/blob/master/Resources/sdarot-url.txt) file, and open a PR.  
 If you find any bugs or have any suggestions, please open an issue on [Github](https://github.com/yairp03/HoradotTV/issues).  
 Contributors can check the [issues](https://github.com/yairp03/HoradotTV/issues) page for open issues and help make this project the best.
