@@ -243,8 +243,20 @@ public class SdarotDriver
             }
         }
 
-        // Click button
-        (await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId))).Click();
+        try
+        {
+            // Click button
+            (await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId))).Click();
+        }
+        catch (WebDriverException)
+        {
+            var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
+            if (errorMessage.Text == Constants.Error2Message)
+            {
+                throw new Error2Exception();
+            }
+            throw new WebsiteErrorException();
+        }
 
         var mediaUrl = (await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia))).GetAttribute("src");
         var cookies = RetrieveCookies();

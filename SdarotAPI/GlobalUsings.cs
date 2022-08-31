@@ -3,6 +3,7 @@ global using OpenQA.Selenium;
 global using OpenQA.Selenium.Chrome;
 global using OpenQA.Selenium.Support.UI;
 global using SdarotAPI.Exceptions;
+global using SdarotAPI.Exceptions.WebsiteErrors;
 global using SdarotAPI.Extensions;
 global using SdarotAPI.Models;
 global using SdarotAPI.Resources;

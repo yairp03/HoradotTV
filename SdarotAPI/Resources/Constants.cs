@@ -32,6 +32,8 @@ internal static class Constants
         public const string SeriesPageEpisode = "//*[@id=\"episode\"]/li";
         // WaitTime/container
         public const string SeriesPageEpisodeWaitTime = "//*[@id=\"waitTime\"]/span";
+        // Loading/container/error/errorMessage
+        public const string SeriesPageErrorMessage = "//*[@id=\"loading\"]/div/div[2]/h3";
     }
 
     public static class IdSelectors
@@ -41,4 +43,5 @@ internal static class Constants
     }
 
     public const int WaitTime = 30;
+    public const string Error2Message = "שגיאה 2!";
 }
