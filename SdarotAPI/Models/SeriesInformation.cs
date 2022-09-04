@@ -26,8 +26,5 @@ public class SeriesInformation
         SeriesCode = GetSeriesCodeFromImageUrl(ImageUrl);
     }
 
-    public static int GetSeriesCodeFromImageUrl(string imageUrl)
-    {
-        return int.Parse(Regex.Match(imageUrl, "\\d+").Value);
-    }
+    public static int GetSeriesCodeFromImageUrl(string imageUrl) => int.Parse(Regex.Match(imageUrl, "\\d+").Value);
 }

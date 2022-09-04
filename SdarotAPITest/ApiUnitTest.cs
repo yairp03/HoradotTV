@@ -16,13 +16,13 @@ public class ApiUnitTest
             var season2 = await driver.GetEpisodesAsync(seasons[1]);
             Assert.AreEqual(season2.Length, 22);
 
-            var episodes = await driver.GetEpisodesAsync(season2[10], 150);
-            Assert.AreNotEqual(episodes.Length, 150);
+            //var episodes = await driver.GetEpisodesAsync(season2[10], 150);
+            //Assert.AreNotEqual(episodes.Length, 150);
 
-            var seriesEpisodes = await driver.GetEpisodesAsync(series);
-            Assert.AreEqual(seriesEpisodes.Length, 142);
+            //var seriesEpisodes = await driver.GetEpisodesAsync(series);
+            //Assert.AreEqual(seriesEpisodes.Length, 142);
 
-            var episode = await driver.GetEpisodeMediaDetailsAsync(episodes[0]) ?? throw new ArgumentNullException();
+            var episode = await driver.GetEpisodeMediaDetailsAsync(season2[0]) ?? throw new ArgumentNullException();
             await SdarotHelper.DownloadEpisode(episode, @"C:\Users\yairp\Desktop\episode.mp4");
         }
         finally

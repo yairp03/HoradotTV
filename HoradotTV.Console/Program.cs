@@ -198,7 +198,7 @@ internal class Program
         failed ??= Enumerable.Empty<EpisodeInformation>();
         var success = total - failed.Count();
         var successPercentage = (int)((double)success / total * 100);
-        IOHelpers.Print("\nDownload Summarize:");
+        IOHelpers.Print("\nDownload Summary:");
         IOHelpers.Print($"Total   = {total}");
         IOHelpers.Print($"Success = {success}\t({successPercentage}%)");
         IOHelpers.Print($"Fail    = {failed.Count()}\t({100 - successPercentage}%)");
