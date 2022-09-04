@@ -47,6 +47,31 @@ public class SdarotDriver
         }
     }
 
+    public async Task<bool> IsLoggedIn()
+    {
+        await NavigateAsync(Constants.SdarotUrls.HomeUrl);
+        var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
+        return loginPanelButton.Text != Constants.LoginMessage;
+    }
+
+    public async Task<bool> Login(string username, string password)
+    {
+        if (await IsLoggedIn())
+            return true;
+
+        var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
+        loginPanelButton.Click();
+        var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
+        var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
+        usernameInput.SendKeys(username);
+        passwordInput.SendKeys(password);
+        var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
+        await Task.Delay(1000);
+        loginButton.Click();
+
+        return await IsLoggedIn();
+    }
+
     async Task NavigateAsync(string url) => await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
 
     async Task NavigateToSeriesAsync(SeriesInformation series) => await NavigateAsync(series.SeriesUrl);
