@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/HoradotTV.Console/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "console app"
+  - package-ecosystem: "nuget"
+    directory: "/SdarotAPI/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "sdarot api"
