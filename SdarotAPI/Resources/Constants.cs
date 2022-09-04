@@ -16,23 +16,20 @@ internal static class Constants
 
     public static class XPathSelectors
     {
-        // Episode/poster/container/title/content
-        public const string SeriesPageSeriesName = "//*[@id=\"watchEpisode\"]/div[1]/div/h1/strong";
-        // Episode/content/container/information/picturebox/image
-        public const string SeriesPageSeriesImage = "//*[@id=\"watchEpisode\"]/div[2]/div/div[1]/div[1]/img";
-        // Results/content/row/series
+        public const string MainPageLoginPanelButton = "//*[@id=\"slideText\"]/p/button";
+        public const string MainPageFormUsername = "//*[@id=\"loginForm\"]/form/div[1]/div/input";
+        public const string MainPageFormPassword = "//*[@id=\"loginForm\"]/form/div[2]/div/input";
+        public const string MainPageLoginButton = "//*[@id=\"loginForm\"]/form/div[4]/button";
+
         public const string SearchPageResult = "//*[@id=\"seriesList\"]/div[2]/div/div";
-        // content/description/nameHe
         public const string SearchPageResultInnerSeriesNameHe = "div/div/h4";
-        // content/description/nameEn
         public const string SearchPageResultInnerSeriesNameEn = "div/div/h5";
-        // Seasons/season
+
+        public const string SeriesPageSeriesName = "//*[@id=\"watchEpisode\"]/div[1]/div/h1/strong";
+        public const string SeriesPageSeriesImage = "//*[@id=\"watchEpisode\"]/div[2]/div/div[1]/div[1]/img";
         public const string SeriesPageSeason = "//*[@id=\"season\"]/li";
-        // Episodes/episode
         public const string SeriesPageEpisode = "//*[@id=\"episode\"]/li";
-        // WaitTime/container
         public const string SeriesPageEpisodeWaitTime = "//*[@id=\"waitTime\"]/span";
-        // Loading/container/error/errorMessage
         public const string SeriesPageErrorMessage = "//*[@id=\"loading\"]/div/div[2]/h3";
     }
 
@@ -44,4 +41,5 @@ internal static class Constants
 
     public const int WaitTime = 30;
     public const string Error2Message = "שגיאה 2!";
+    public const string LoginMessage = "התחברות לאתר";
 }
