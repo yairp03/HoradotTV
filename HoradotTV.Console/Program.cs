@@ -151,6 +151,8 @@ internal class Program
     {
         try
         {
+            await LoginToWebsite(driver);
+
             var failedEpisodes = new List<EpisodeInformation>();
 
             var i = 0;
@@ -212,6 +214,25 @@ internal class Program
         }
     }
 
+    static async Task LoginToWebsite(SdarotDriver driver)
+    {
+        if (await driver.IsLoggedIn())
+            return;
+
+        IOHelpers.Print("\nYou need to log in to download episodes.");
+        while (true)
+        {
+            var username = IOHelpers.Input("\nUsername or email: ");
+            var password = IOHelpers.Input("Password: ");
+            if (await driver.Login(username, password))
+            {
+                IOHelpers.Print("Logged in successfully, proceeding.");
+                return;
+            }
+
+            IOHelpers.Print("Bad credentials, please try again.");
+        }
+    }
     static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
     {
         do
