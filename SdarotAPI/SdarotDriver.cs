@@ -22,10 +22,10 @@ public class SdarotDriver
         var driverService = ChromeDriverService.CreateDefaultService();
         driverService.HideCommandPromptWindow = true;
         ChromeOptions options = new();
+        options.AddArgument("user-agent=" + Constants.UserAgent);
         if (headless)
         {
             options.AddArgument("headless");
-            options.AddArgument("user-agent=" + Constants.UserAgent);
             options.AddArgument("--remote-debugging-port=9222");
         }
 
