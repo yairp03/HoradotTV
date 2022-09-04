@@ -18,10 +18,12 @@ The console app is a command line application that utilizes the SdarotAPI librar
 With some more features like retries on server errors, and division to folders.
 
 ### Running The Console App
-The easiest way to use the console app is through the release on Github:
+The easiest way to use the console app is through the release on GitHub:
 
 1. Go to the [releases](https://github.com/yairp03/HoradotTV/releases) page.
-2. Download the latest `HoradotTV.Console.zip` file.
+2. Download the latest `zip` file.
+    - If you have `.NET` installed, you can download the `HoradotTV.Console.zip`.
+    - If you don't know what `.NET` is, download the `HoradotTV.Console.WithRuntime.zip`.
 3. Extract the zip.
 4. Run the `HoradotTV.Console.exe` file.
 
@@ -29,7 +31,7 @@ The easiest way to use the console app is through the release on Github:
 If you want to build the project from source, you can do that by using Visual Studio:
 
 1. Open the `HoradotTV.sln` file with Visual Studio.
-2. Select the console app (`HoradotTV.Console`) as startup project.
+2. Select the console app (`HoradotTV.Console) as a startup project.
 3. Press `F5` to run.
 
 
@@ -43,6 +45,6 @@ Contributors who are willing to help use the SdarotAPI library to build the GUI 
 - SdarotAPI for python.
 
 ## Contributing
-If the url for SdarotTV changed, please fork the repo, change the [sdarot-url.txt](https://github.com/yairp03/HoradotTV/blob/master/Resources/sdarot-url.txt) file, and open a PR.  
+If the URL for SdarotTV changes, please fork the repo, change the [sdarot-url.txt](https://github.com/yairp03/HoradotTV/blob/master/Resources/sdarot-url.txt) file, and open a PR.  
 If you find any bugs or have any suggestions, please open an issue on [Github](https://github.com/yairp03/HoradotTV/issues).  
 Contributors can check the [issues](https://github.com/yairp03/HoradotTV/issues) page for open issues and help make this project the best.
