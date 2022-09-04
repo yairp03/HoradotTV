@@ -25,6 +25,7 @@ public class SdarotDriver
         if (headless)
         {
             options.AddArgument("headless");
+            options.AddArgument("user-agent=" + Constants.UserAgent);
             options.AddArgument("--remote-debugging-port=9222");
         }
 
@@ -280,6 +281,7 @@ public class SdarotDriver
             {
                 throw new Error2Exception();
             }
+
             throw new WebsiteErrorException();
         }
 
