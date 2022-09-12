@@ -1,6 +1,6 @@
 ﻿namespace SdarotAPI.Exceptions.WebsiteErrors;
 
-public class Error2Exception : Exception
+public class Error2Exception : WebsiteErrorException
 {
     public Error2Exception()
     {

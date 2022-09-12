@@ -52,7 +52,7 @@ public class SdarotDriver
     {
         await NavigateAsync(Constants.SdarotUrls.HomeUrl);
         var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
-        return loginPanelButton.Text != Constants.LoginMessage;
+        return loginPanelButton != null ? loginPanelButton.Text != Constants.LoginMessage : throw new ElementNotFoundException(nameof(loginPanelButton));
     }
 
     public async Task<bool> Login(string username, string password)
@@ -61,12 +61,20 @@ public class SdarotDriver
             return true;
 
         var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
+        if (loginPanelButton == null)
+            throw new ElementNotFoundException(nameof(loginPanelButton));
         loginPanelButton.Click();
         var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
+        if (usernameInput == null)
+            throw new ElementNotFoundException(nameof(usernameInput));
         var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
+        if (passwordInput == null)
+            throw new ElementNotFoundException(nameof(passwordInput));
         usernameInput.SendKeys(username);
         passwordInput.SendKeys(password);
         var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
+        if (loginButton == null)
+            throw new ElementNotFoundException(nameof(loginButton));
         await Task.Delay(1000);
         loginButton.Click();
 
@@ -81,15 +89,52 @@ public class SdarotDriver
 
     async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
-    async Task<IWebElement> FindElementAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by)));
+    async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by));
+            }
+            catch
+            {
+                return null;
+            }
+        });
+    }
 
     static async Task<IWebElement> FindElementAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElement(by));
 
-    async Task<IWebElement> FindClickableElementAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by)));
+    async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
+            }
+            catch
+            {
+                return null;
+            }
+        });
+    }
 
-    async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, int timeout = 2) => await Task.Run(() => new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by)));
-
-    static async Task<ReadOnlyCollection<IWebElement>> FindElementsAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElements(by));
+    async Task<ReadOnlyCollection<IWebElement>?> FindElementsAsync(By by, int timeout = 2)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by));
+            }
+            catch
+            {
+                return null;
+            }
+        });
+    }
 
     CookieContainer RetrieveCookies()
     {
@@ -122,8 +167,14 @@ public class SdarotDriver
         // In case there is only one result
         if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
-            var seriesName = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName))).Text.Trim(new char[] { ' ', '/' });
-            var imageUrl = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage))).GetAttribute("src");
+            var seriesNameElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName));
+            if (seriesNameElement == null)
+                throw new ElementNotFoundException(nameof(seriesNameElement));
+            var seriesName = seriesNameElement.Text.Trim(new char[] { ' ', '/' });
+            var imageUrlElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage));
+            if (imageUrlElement == null)
+                throw new ElementNotFoundException(nameof(imageUrlElement));
+            var imageUrl = imageUrlElement.GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
 
@@ -164,6 +215,9 @@ public class SdarotDriver
 
         var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
 
+        if (seasonElements is null || seasonElements.Count == 0)
+            return Enumerable.Empty<SeasonInformation>();
+
         List<SeasonInformation> seasons = new();
         for (var i = 0; i < seasonElements.Count; i++)
         {
@@ -186,6 +240,9 @@ public class SdarotDriver
         await NavigateToSeasonAsync(season);
 
         var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
+
+        if (episodeElements == null || episodeElements.Count == 0)
+            return Enumerable.Empty<EpisodeInformation>();
 
         List<EpisodeInformation> episodes = new();
         for (var i = 0; i < episodeElements.Count; i++)
@@ -261,7 +318,10 @@ public class SdarotDriver
         var currSeconds = (float)Constants.WaitTime;
         while (currSeconds > 0)
         {
-            var newSeconds = float.Parse((await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime))).Text);
+            var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
+            if (secondsLeft == null)
+                throw new ElementNotFoundException(nameof(secondsLeft));
+            var newSeconds = float.Parse(secondsLeft.Text);
             if (newSeconds != currSeconds)
             {
                 currSeconds = newSeconds;
@@ -272,11 +332,17 @@ public class SdarotDriver
         try
         {
             // Click button
-            (await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId))).Click();
+            var proceedButton = await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId));
+            if (proceedButton == null)
+                throw new ElementNotFoundException(nameof(proceedButton));
+            proceedButton.Click();
         }
         catch (WebDriverException)
         {
             var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
+            if (errorMessage == null)
+                throw new ElementNotFoundException(nameof(errorMessage));
+
             if (errorMessage.Text == Constants.Error2Message)
             {
                 throw new Error2Exception();
@@ -285,7 +351,10 @@ public class SdarotDriver
             throw new WebsiteErrorException();
         }
 
-        var mediaUrl = (await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia))).GetAttribute("src");
+        var episodeMedia = await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia));
+        if (episodeMedia == null)
+            throw new ElementNotFoundException(nameof(episodeMedia));
+        var mediaUrl = episodeMedia.GetAttribute("src");
         var cookies = RetrieveCookies();
 
         return new EpisodeMediaDetails(mediaUrl, cookies, episode);
