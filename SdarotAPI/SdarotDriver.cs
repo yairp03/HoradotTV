@@ -110,7 +110,7 @@ public class SdarotDriver
         }
     }
 
-    public async Task<SeriesInformation[]> SearchSeries(string searchQuery)
+    public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
         if (!IsInitialized)
         {
@@ -137,7 +137,7 @@ public class SdarotDriver
         // In case there are no results
         if (results is null || results.Count == 0)
         {
-            return Array.Empty<SeriesInformation>();
+            return Enumerable.Empty<SeriesInformation>();
         }
 
         // In case there are more than one result
@@ -150,10 +150,10 @@ public class SdarotDriver
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
 
-        return seriesList.ToArray();
+        return seriesList;
     }
 
-    public async Task<SeasonInformation[]> GetSeasonsAsync(SeriesInformation series)
+    public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)
     {
         if (!IsInitialized)
         {
@@ -173,10 +173,10 @@ public class SdarotDriver
             seasons.Add(new(seasonNumber, i, seasonName, series));
         }
 
-        return seasons.ToArray();
+        return seasons;
     }
 
-    public async Task<EpisodeInformation[]> GetEpisodesAsync(SeasonInformation season)
+    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
         if (!IsInitialized)
         {
@@ -196,18 +196,18 @@ public class SdarotDriver
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 
-        return episodes.ToArray();
+        return episodes;
     }
 
-    public async Task<EpisodeInformation[]> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
+    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
     {
         if (!IsInitialized)
         {
             throw new DriverNotInitializedException();
         }
 
-        var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season))[firstEpisode.EpisodeIndex..]);
-        var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series))[(firstEpisode.Season.SeasonIndex + 1)..]);
+        var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.EpisodeIndex..]);
+        var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series)).ToArray()[(firstEpisode.Season.SeasonIndex + 1)..]);
 
         List<EpisodeInformation> episodes = new();
         for (var i = 0; i < maxEpisodeAmount; i++)
@@ -227,10 +227,10 @@ public class SdarotDriver
             episodes.Add(episodesBuffer.Dequeue());
         }
 
-        return episodes.ToArray();
+        return episodes;
     }
 
-    public async Task<EpisodeInformation[]> GetEpisodesAsync(SeriesInformation series)
+    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeriesInformation series)
     {
         if (!IsInitialized)
         {
@@ -245,7 +245,7 @@ public class SdarotDriver
             episodes.AddRange(await GetEpisodesAsync(season));
         }
 
-        return episodes.ToArray();
+        return episodes;
     }
 
     public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
