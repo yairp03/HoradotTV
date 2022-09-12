@@ -337,7 +337,7 @@ public class SdarotDriver
                 throw new ElementNotFoundException(nameof(proceedButton));
             proceedButton.Click();
         }
-        catch (WebDriverException)
+        catch
         {
             var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
             if (errorMessage == null)
