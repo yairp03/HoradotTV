@@ -7,7 +7,7 @@ internal class Program
 
     static async Task Main()
     {
-        IOHelpers.Print("Welcome to HoradotTV!");
+        IOHelpers.Print($"Welcome to HoradotTV {Constants.SOFTWARE_VERSION}!");
         IOHelpers.Print("Initializing...");
 
         ExitHelper.Initialize(Shutdown);

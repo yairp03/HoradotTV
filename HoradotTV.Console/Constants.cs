@@ -2,6 +2,8 @@
 
 internal static class Constants
 {
+    public static string SOFTWARE_VERSION = "1.0.3";
+
     public static int QUERY_MIN_LENGTH = 2;
 
     public static string DEFAULT_DOWNLOAD_LOCATION = KnownFolders.Downloads.Path;
