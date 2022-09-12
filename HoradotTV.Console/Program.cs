@@ -56,7 +56,7 @@ internal class Program
 
     static async Task<SeriesInformation?> SearchSeries(SdarotDriver driver)
     {
-        var searchResult = Array.Empty<SeriesInformation>();
+        var searchResult = new List<SeriesInformation>();
         do
         {
             var query = IOHelpers.Input("\nEnter series name or part of it: ");
@@ -66,19 +66,19 @@ internal class Program
                 continue;
             }
 
-            searchResult = await driver.SearchSeries(query);
-            if (searchResult.Length == 0)
+            searchResult = (await driver.SearchSeries(query)).ToList();
+            if (searchResult.Count == 0)
                 IOHelpers.Print("Series not found.");
-        } while (searchResult.Length == 0);
+        } while (searchResult.Count == 0);
 
         IOHelpers.Print("\nResults:");
         IOHelpers.Print("[0] Back to start");
-        for (var i = 0; i < searchResult.Length; i++)
+        for (var i = 0; i < searchResult.Count; i++)
         {
             IOHelpers.Print($"[{i + 1}] {searchResult[i].SeriesNameEn} - {searchResult[i].SeriesNameHe}");
         }
 
-        var selection = IOHelpers.ChooseOptionRange(searchResult.Length, "Choose a series");
+        var selection = IOHelpers.ChooseOptionRange(searchResult.Count, "Choose a series");
         return selection == 0 ? null : searchResult[selection - 1];
     }
 
@@ -155,11 +155,11 @@ internal class Program
 
             var failedEpisodes = new List<EpisodeInformation>();
 
-            var i = 0;
-            foreach (var episode in episodes)
+            var episodesList = episodes.ToList();
+
+            foreach (var (episode, i) in episodesList.Select((value, i) => (value, i)))
             {
-                i++;
-                IOHelpers.Print($"\n({i}/{episodes.Count()})");
+                IOHelpers.Print($"\n({i}/{episodesList.Count})");
                 IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
                 if (episodeMedia == null)
@@ -184,7 +184,7 @@ internal class Program
                     failedEpisodes = (await DownloadEpisodes(driver, failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
                 }
 
-                SummarizeDownload(episodes.Count(), failedEpisodes);
+                SummarizeDownload(episodesList.Count, failedEpisodes);
                 IOHelpers.Print("\nDone. Returning to start.");
             }
 
