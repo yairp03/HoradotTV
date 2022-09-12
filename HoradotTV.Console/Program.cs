@@ -159,7 +159,7 @@ internal class Program
 
             foreach (var (episode, i) in episodesList.Select((value, i) => (value, i)))
             {
-                IOHelpers.Print($"\n({i}/{episodesList.Count})");
+                IOHelpers.Print($"\n({i + 1}/{episodesList.Count})");
                 IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
                 if (episodeMedia == null)
