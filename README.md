@@ -42,7 +42,7 @@ Contributors who are willing to help use the SdarotAPI library to build the GUI 
 ## Future Development
 - Support for SratimTV.
 - GUI app.
-- SdarotAPI for python.
+- SdarotAPI in python.
 
 ## Contributing
 If the URL for SdarotTV changes, please fork the repo, change the [sdarot-url.txt](https://github.com/yairp03/HoradotTV/blob/master/Resources/sdarot-url.txt) file, and open a PR.  
