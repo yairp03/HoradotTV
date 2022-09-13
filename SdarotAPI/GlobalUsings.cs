@@ -1,4 +1,5 @@
-﻿global using Microsoft.Win32;
+﻿global using HtmlAgilityPack;
+global using Microsoft.Win32;
 global using OpenQA.Selenium;
 global using OpenQA.Selenium.Chrome;
 global using OpenQA.Selenium.Support.UI;
