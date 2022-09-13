@@ -3,6 +3,7 @@
 public class SdarotDriver
 {
     ChromeDriver? webDriver;
+    readonly HttpClient httpClient = new();
 
     public bool IsInitialized => webDriver is not null;
 
@@ -32,6 +33,7 @@ public class SdarotDriver
         webDriver = new ChromeDriver(driverService, options);
 
         Constants.SdarotUrls.BaseDomain = await SdarotHelper.RetrieveSdarotDomain();
+        httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
 
         try
         {
@@ -237,9 +239,11 @@ public class SdarotDriver
             throw new DriverNotInitializedException();
         }
 
-        await NavigateToSeasonAsync(season);
+        var episodesHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
+        var doc = new HtmlDocument();
+        doc.LoadHtml(episodesHtml);
 
-        var episodeElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisode));
+        var episodeElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.AjaxEpisode);
 
         if (episodeElements == null || episodeElements.Count == 0)
             return Enumerable.Empty<EpisodeInformation>();
@@ -248,8 +252,8 @@ public class SdarotDriver
         for (var i = 0; i < episodeElements.Count; i++)
         {
             var element = episodeElements[i];
-            var episodeNumber = int.Parse(element.GetAttribute("data-episode"));
-            var episodeName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            var episodeNumber = element.GetAttributeValue<int>("data-episode", 0);
+            var episodeName = element.SelectSingleNode("a").InnerText;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 

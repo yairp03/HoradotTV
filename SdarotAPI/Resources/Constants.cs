@@ -12,6 +12,7 @@ internal static class Constants
         public static string WatchUrl => $"{HomeUrl}watch/";
         public static string ImageUrl => $"https://static.{BaseDomain}/series/";
         public static string TestUrl => $"{WatchUrl}1";
+        public static string AjaxUrl => $"{HomeUrl}ajax/watch";
     }
 
     public static class XPathSelectors
@@ -31,6 +32,8 @@ internal static class Constants
         public const string SeriesPageEpisode = "//*[@id=\"episode\"]/li";
         public const string SeriesPageEpisodeWaitTime = "//*[@id=\"waitTime\"]/span";
         public const string SeriesPageErrorMessage = "//*[@id=\"loading\"]/div/div[2]/h3";
+
+        public const string AjaxEpisode = "/li";
     }
 
     public static class IdSelectors
