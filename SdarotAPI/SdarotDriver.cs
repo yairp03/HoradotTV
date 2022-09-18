@@ -85,10 +85,6 @@ public class SdarotDriver
 
     async Task NavigateAsync(string url) => await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
 
-    async Task NavigateToSeriesAsync(SeriesInformation series) => await NavigateAsync(series.SeriesUrl);
-
-    async Task NavigateToSeasonAsync(SeasonInformation season) => await NavigateAsync(season.SeasonUrl);
-
     async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
     async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
@@ -106,8 +102,6 @@ public class SdarotDriver
         });
     }
 
-    static async Task<IWebElement> FindElementAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElement(by));
-
     async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() =>
@@ -115,21 +109,6 @@ public class SdarotDriver
             try
             {
                 return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
-            }
-            catch
-            {
-                return null;
-            }
-        });
-    }
-
-    async Task<ReadOnlyCollection<IWebElement>?> FindElementsAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by));
             }
             catch
             {
@@ -200,24 +179,20 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
+        var seriesHtml = await httpClient.GetStringAsync(series.SeriesUrl);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(seriesHtml);
 
-        await NavigateToSeriesAsync(series);
-
-        var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
+        var seasonElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SeriesPageSeason);
 
         if (seasonElements is null || seasonElements.Count == 0)
             return Enumerable.Empty<SeasonInformation>();
 
         List<SeasonInformation> seasons = new();
-        for (var i = 0; i < seasonElements.Count; i++)
+        foreach (var (season, i) in seasonElements.Select((season, i) => (season, i)))
         {
-            var element = seasonElements[i];
-            var seasonNumber = int.Parse(element.GetAttribute("data-season"));
-            var seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            var seasonNumber = season.GetAttributeValue("data-season", 0);
+            var seasonName = season.SelectSingleNode("a").InnerText;
             seasons.Add(new(seasonNumber, i, seasonName, series));
         }
 
@@ -236,11 +211,10 @@ public class SdarotDriver
             return Enumerable.Empty<EpisodeInformation>();
 
         List<EpisodeInformation> episodes = new();
-        for (var i = 0; i < episodeElements.Count; i++)
+        foreach (var (episode, i) in episodeElements.Select((episode, i) => (episode, i)))
         {
-            var element = episodeElements[i];
-            var episodeNumber = element.GetAttributeValue("data-episode", 0);
-            var episodeName = element.SelectSingleNode("a").InnerText;
+            var episodeNumber = episode.GetAttributeValue("data-episode", 0);
+            var episodeName = episode.SelectSingleNode("a").InnerText;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 
@@ -249,11 +223,6 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.EpisodeIndex..]);
         var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series)).ToArray()[(firstEpisode.Season.SeasonIndex + 1)..]);
 
@@ -280,11 +249,6 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeriesInformation series)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var seasons = await GetSeasonsAsync(series);
 
         List<EpisodeInformation> episodes = new();
