@@ -21,7 +21,7 @@ With some more features like retries on server errors, and division to folders.
 The easiest way to use the console app is through the release on GitHub:
 
 1. Go to the [releases](https://github.com/yairp03/HoradotTV/releases) page.
-2. Download the latest `zip` file.
+2. Download the latest `zip` file:
     - If you have `.NET` installed, you can download the `HoradotTV.Console.zip`.
     - If you don't know what `.NET` is, download the `HoradotTV.Console.WithRuntime.zip`.
 3. Extract the zip.
