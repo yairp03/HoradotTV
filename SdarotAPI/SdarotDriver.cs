@@ -159,47 +159,39 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
+        var searchHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
+        var doc = new HtmlDocument();
+        doc.LoadHtml(searchHtml);
 
-        await NavigateAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
+        var seriesNameElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesName);
 
         // In case there is only one result
-        if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
+        if (seriesNameElement is not null)
         {
-            var seriesNameElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName));
-            if (seriesNameElement is null)
-                throw new ElementNotFoundException(nameof(seriesNameElement));
-            var seriesName = seriesNameElement.Text.Trim(new char[] { ' ', '/' });
-            var imageUrlElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage));
+            var seriesName = seriesNameElement.InnerText.Trim(new char[] { ' ', '/' });
+
+            var imageUrlElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesImage);
             if (imageUrlElement is null)
                 throw new ElementNotFoundException(nameof(imageUrlElement));
-            var imageUrl = imageUrlElement.GetAttribute("src");
+            var imageUrl = imageUrlElement.GetAttributeValue("src", "");
+
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
 
-        ReadOnlyCollection<IWebElement>? results = null;
-        try
-        {
-            results = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SearchPageResult));
-        }
-        catch (WebDriverTimeoutException) { }
+        var seriesElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SearchPageResult);
 
         // In case there are no results
-        if (results is null || results.Count == 0)
-        {
+        if (seriesElements is null || seriesElements.Count == 0)
             return Enumerable.Empty<SeriesInformation>();
-        }
 
         // In case there are more than one result
+
         var seriesList = new List<SeriesInformation>();
-        foreach (var result in results)
+        foreach (var seriesElement in seriesElements)
         {
-            var seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).GetAttribute("innerText");
-            var seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).GetAttribute("innerText");
-            var imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
+            var seriesNameHe = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe).InnerText;
+            var seriesNameEn = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn).InnerText;
+            var imageUrl = seriesElement.SelectSingleNode("img").GetAttributeValue("src", "");
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
 
@@ -234,11 +226,6 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var episodesHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
         var doc = new HtmlDocument();
         doc.LoadHtml(episodesHtml);
@@ -252,7 +239,7 @@ public class SdarotDriver
         for (var i = 0; i < episodeElements.Count; i++)
         {
             var element = episodeElements[i];
-            var episodeNumber = element.GetAttributeValue<int>("data-episode", 0);
+            var episodeNumber = element.GetAttributeValue("data-episode", 0);
             var episodeName = element.SelectSingleNode("a").InnerText;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
