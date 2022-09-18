@@ -160,21 +160,21 @@ internal class Program
             foreach (var (episode, i) in episodesList.Select((value, i) => (value, i)))
             {
                 IOHelpers.Print($"\n({i + 1}/{episodesList.Count})");
-                IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
+                IOHelpers.Log($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
                 if (episodeMedia is null)
                 {
                     failedEpisodes.Add(episode);
-                    IOHelpers.Print("Failed. Proceeding to next episode.");
+                    IOHelpers.Log("Failed. Proceeding to next episode.");
                     continue;
                 }
 
-                IOHelpers.Print($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
+                IOHelpers.Log($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var cleanSeriesName = string.Concat(episode.Series.SeriesNameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
                 var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
                 Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
-                IOHelpers.Print("Download completed.");
+                IOHelpers.Log("Download completed.");
             }
 
             if (retryFailed)
@@ -244,13 +244,13 @@ internal class Program
             }
             catch (Error2Exception)
             {
-                IOHelpers.Print("Error 2, Skipping.");
+                IOHelpers.Log("Error 2, Skipping.");
                 return null;
             }
             catch
             {
                 if (retries > 0)
-                    IOHelpers.Print($"Failed. Trying again... ({retries} tries left)");
+                    IOHelpers.Log($"Failed. Trying again... ({retries} tries left)");
                 retries--;
 
             }
