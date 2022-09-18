@@ -87,8 +87,6 @@ public class SdarotDriver
 
     async Task NavigateToSeriesAsync(SeriesInformation series) => await NavigateAsync(series.SeriesUrl);
 
-    async Task NavigateToSeasonAsync(SeasonInformation season) => await NavigateAsync(season.SeasonUrl);
-
     async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
     async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
