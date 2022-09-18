@@ -46,7 +46,7 @@ public class ApiUnitTest
         }
     }
 
-    public async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
+    public static async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
     {
         Stopwatch sw = new();
         sw.Start();

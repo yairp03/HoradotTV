@@ -85,8 +85,6 @@ public class SdarotDriver
 
     async Task NavigateAsync(string url) => await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
 
-    async Task NavigateToSeriesAsync(SeriesInformation series) => await NavigateAsync(series.SeriesUrl);
-
     async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
     async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
@@ -104,8 +102,6 @@ public class SdarotDriver
         });
     }
 
-    static async Task<IWebElement> FindElementAsync(By by, ISearchContext context) => await Task.Run(() => context.FindElement(by));
-
     async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() =>
@@ -113,21 +109,6 @@ public class SdarotDriver
             try
             {
                 return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
-            }
-            catch
-            {
-                return null;
-            }
-        });
-    }
-
-    async Task<ReadOnlyCollection<IWebElement>?> FindElementsAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.VisibilityOfAllElementsLocatedBy(by));
             }
             catch
             {
@@ -198,24 +179,20 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
+        var seriesHtml = await httpClient.GetStringAsync(series.SeriesUrl);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(seriesHtml);
 
-        await NavigateToSeriesAsync(series);
-
-        var seasonElements = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeason));
+        var seasonElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SeriesPageSeason);
 
         if (seasonElements is null || seasonElements.Count == 0)
             return Enumerable.Empty<SeasonInformation>();
 
         List<SeasonInformation> seasons = new();
-        for (var i = 0; i < seasonElements.Count; i++)
+        foreach (var (season, i) in seasonElements.Select((season, i) => (season, i)))
         {
-            var element = seasonElements[i];
-            var seasonNumber = int.Parse(element.GetAttribute("data-season"));
-            var seasonName = (await FindElementAsync(By.TagName("a"), element)).Text;
+            var seasonNumber = season.GetAttributeValue("data-season", 0);
+            var seasonName = season.SelectSingleNode("a").InnerText;
             seasons.Add(new(seasonNumber, i, seasonName, series));
         }
 
