@@ -234,11 +234,10 @@ public class SdarotDriver
             return Enumerable.Empty<EpisodeInformation>();
 
         List<EpisodeInformation> episodes = new();
-        for (var i = 0; i < episodeElements.Count; i++)
+        foreach (var (episode, i) in episodeElements.Select((episode, i) => (episode, i)))
         {
-            var element = episodeElements[i];
-            var episodeNumber = element.GetAttributeValue("data-episode", 0);
-            var episodeName = element.SelectSingleNode("a").InnerText;
+            var episodeNumber = episode.GetAttributeValue("data-episode", 0);
+            var episodeName = episode.SelectSingleNode("a").InnerText;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
 
