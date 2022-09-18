@@ -27,7 +27,7 @@ public class SdarotDriver
         if (headless)
         {
             options.AddArgument("headless");
-            options.AddArgument("--remote-debugging-port=9222");
+            // options.AddArgument("--remote-debugging-port=9222"); // Sometimes cause the driver to not load
         }
 
         webDriver = new ChromeDriver(driverService, options);
