@@ -63,19 +63,19 @@ public class SdarotDriver
             return true;
 
         var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
-        if (loginPanelButton == null)
+        if (loginPanelButton is null)
             throw new ElementNotFoundException(nameof(loginPanelButton));
         loginPanelButton.Click();
         var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
-        if (usernameInput == null)
+        if (usernameInput is null)
             throw new ElementNotFoundException(nameof(usernameInput));
         var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
-        if (passwordInput == null)
+        if (passwordInput is null)
             throw new ElementNotFoundException(nameof(passwordInput));
         usernameInput.SendKeys(username);
         passwordInput.SendKeys(password);
         var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
-        if (loginButton == null)
+        if (loginButton is null)
             throw new ElementNotFoundException(nameof(loginButton));
         await Task.Delay(1000);
         loginButton.Click();
@@ -159,47 +159,39 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
+        var searchHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
+        var doc = new HtmlDocument();
+        doc.LoadHtml(searchHtml);
 
-        await NavigateAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
+        var seriesNameElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesName);
 
         // In case there is only one result
-        if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
+        if (seriesNameElement is not null)
         {
-            var seriesNameElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName));
-            if (seriesNameElement == null)
-                throw new ElementNotFoundException(nameof(seriesNameElement));
-            var seriesName = seriesNameElement.Text.Trim(new char[] { ' ', '/' });
-            var imageUrlElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage));
-            if (imageUrlElement == null)
+            var seriesName = seriesNameElement.InnerText.Trim(new char[] { ' ', '/' });
+
+            var imageUrlElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesImage);
+            if (imageUrlElement is null)
                 throw new ElementNotFoundException(nameof(imageUrlElement));
-            var imageUrl = imageUrlElement.GetAttribute("src");
+            var imageUrl = imageUrlElement.GetAttributeValue("src", "");
+
             return new SeriesInformation[] { new(seriesName, imageUrl) };
         }
 
-        ReadOnlyCollection<IWebElement>? results = null;
-        try
-        {
-            results = await FindElementsAsync(By.XPath(Constants.XPathSelectors.SearchPageResult));
-        }
-        catch (WebDriverTimeoutException) { }
+        var seriesElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SearchPageResult);
 
         // In case there are no results
-        if (results is null || results.Count == 0)
-        {
+        if (seriesElements is null || seriesElements.Count == 0)
             return Enumerable.Empty<SeriesInformation>();
-        }
 
         // In case there are more than one result
+
         var seriesList = new List<SeriesInformation>();
-        foreach (var result in results)
+        foreach (var seriesElement in seriesElements)
         {
-            var seriesNameHe = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe), result)).GetAttribute("innerText");
-            var seriesNameEn = (await FindElementAsync(By.XPath(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn), result)).GetAttribute("innerText");
-            var imageUrl = (await FindElementAsync(By.TagName("img"), result)).GetAttribute("src");
+            var seriesNameHe = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe).InnerText;
+            var seriesNameEn = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn).InnerText;
+            var imageUrl = seriesElement.SelectSingleNode("img").GetAttributeValue("src", "");
             seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
         }
 
@@ -234,25 +226,20 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var episodesHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
         var doc = new HtmlDocument();
         doc.LoadHtml(episodesHtml);
 
         var episodeElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.AjaxEpisode);
 
-        if (episodeElements == null || episodeElements.Count == 0)
+        if (episodeElements is null || episodeElements.Count == 0)
             return Enumerable.Empty<EpisodeInformation>();
 
         List<EpisodeInformation> episodes = new();
         for (var i = 0; i < episodeElements.Count; i++)
         {
             var element = episodeElements[i];
-            var episodeNumber = element.GetAttributeValue<int>("data-episode", 0);
+            var episodeNumber = element.GetAttributeValue("data-episode", 0);
             var episodeName = element.SelectSingleNode("a").InnerText;
             episodes.Add(new(episodeNumber, i, episodeName, season));
         }
@@ -323,7 +310,7 @@ public class SdarotDriver
         while (currSeconds > 0)
         {
             var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
-            if (secondsLeft == null)
+            if (secondsLeft is null)
                 throw new ElementNotFoundException(nameof(secondsLeft));
             var newSeconds = float.Parse(secondsLeft.Text);
             if (newSeconds != currSeconds)
@@ -337,14 +324,14 @@ public class SdarotDriver
         {
             // Click button
             var proceedButton = await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId));
-            if (proceedButton == null)
+            if (proceedButton is null)
                 throw new ElementNotFoundException(nameof(proceedButton));
             proceedButton.Click();
         }
         catch
         {
             var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
-            if (errorMessage == null)
+            if (errorMessage is null)
                 throw new ElementNotFoundException(nameof(errorMessage));
 
             if (errorMessage.Text == Constants.Error2Message)
@@ -356,7 +343,7 @@ public class SdarotDriver
         }
 
         var episodeMedia = await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia));
-        if (episodeMedia == null)
+        if (episodeMedia is null)
             throw new ElementNotFoundException(nameof(episodeMedia));
         var mediaUrl = episodeMedia.GetAttribute("src");
         var cookies = RetrieveCookies();
