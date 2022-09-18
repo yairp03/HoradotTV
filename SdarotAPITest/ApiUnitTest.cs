@@ -12,7 +12,7 @@ public class ApiUnitTest
         SdarotDriver driver = new();
         try
         {
-            await driver.Initialize();
+            await driver.InitializeWebDriver();
 
             var series = (await driver.SearchSeries("hahamama")).ToList();
             var hamhamama = series[0];
@@ -23,7 +23,7 @@ public class ApiUnitTest
         }
         finally
         {
-            driver.Shutdown();
+            driver.ShutdownWebDriver();
         }
     }
 
@@ -33,7 +33,7 @@ public class ApiUnitTest
         SdarotDriver driver = new();
         try
         {
-            await driver.Initialize();
+            await driver.InitializeWebDriver();
 
             Trace.WriteLine($"No results: {(await MeasureSearch(driver, "dsakdjaslkfjsalkjfas")).TotalSeconds} seconds.");
             Trace.WriteLine($"15 results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
@@ -42,7 +42,7 @@ public class ApiUnitTest
         }
         finally
         {
-            driver.Shutdown();
+            driver.ShutdownWebDriver();
         }
     }
 

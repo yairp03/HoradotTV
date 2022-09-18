@@ -7,7 +7,17 @@ internal static class IOHelpers
     public static string Input(string s = "")
     {
         System.Console.Write(s);
-        return System.Console.ReadLine() ?? string.Empty;
+        try
+        {
+            var result = System.Console.ReadLine();
+            return result ?? throw new Exception();
+        }
+        catch
+        {
+            Environment.Exit(0);
+        }
+
+        return "";
     }
     public static int InputInt(string s = "")
     {

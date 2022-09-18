@@ -2,7 +2,6 @@
 
 internal class Program
 {
-
     static SdarotDriver? driver;
 
     static async Task Main()
@@ -15,7 +14,6 @@ internal class Program
         System.Console.OutputEncoding = Encoding.Unicode;
 
         driver = new SdarotDriver();
-        await driver.Initialize();
 
         while (true)
         {
@@ -147,10 +145,17 @@ internal class Program
     static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
     static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new EpisodeInformation[] { episode }, downloadLocation);
     static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
-    static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool retryFailed = true)
+    static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
     {
         try
         {
+            if (rootRun)
+            {
+                IOHelpers.Print("\nInitializing web driver...");
+                await driver.InitializeWebDriver();
+                IOHelpers.Print("Done.");
+            }
+
             await LoginToWebsite(driver);
 
             var failedEpisodes = new List<EpisodeInformation>();
@@ -177,7 +182,7 @@ internal class Program
                 IOHelpers.Log("Download completed.");
             }
 
-            if (retryFailed)
+            if (rootRun)
             {
                 if (failedEpisodes.Count > 0)
                 {
@@ -192,6 +197,10 @@ internal class Program
             return failedEpisodes;
         }
         catch { }
+        finally
+        {
+            driver.ShutdownWebDriver();
+        }
 
         return null;
     }
@@ -261,7 +270,7 @@ internal class Program
 
     static void Shutdown()
     {
-        driver?.Shutdown();
+        driver?.ShutdownWebDriver();
         Environment.Exit(0);
     }
 }

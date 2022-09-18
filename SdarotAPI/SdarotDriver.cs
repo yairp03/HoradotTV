@@ -2,20 +2,24 @@
 
 public class SdarotDriver
 {
-    ChromeDriver? webDriver;
-    readonly HttpClient httpClient = new();
+    ChromeDriver? _webDriver;
+    readonly HttpClient _httpClient = new();
+    readonly bool _headless;
 
-    public bool IsInitialized => webDriver is not null;
+    public bool IsDriverInitialized => _webDriver is not null;
 
-    public SdarotDriver()
+    public SdarotDriver(bool headless = true)
     {
+        _headless = headless;
+        Constants.SdarotUrls.BaseDomain = SdarotHelper.RetrieveSdarotDomain().Result;
+        _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
     }
 
-    public async Task Initialize(bool headless = true)
+    public async Task InitializeWebDriver()
     {
-        if (IsInitialized)
+        if (IsDriverInitialized)
         {
-            throw new DriverAlreadyInitializedException();
+            return;
         }
 
         await ChromeDriverHelper.Install();
@@ -24,20 +28,17 @@ public class SdarotDriver
         driverService.HideCommandPromptWindow = true;
         ChromeOptions options = new();
         options.AddArgument("user-agent=" + Constants.UserAgent);
-        if (headless)
+        if (_headless)
         {
             options.AddArgument("headless");
             // options.AddArgument("--remote-debugging-port=9222"); // Sometimes cause the driver to not load
         }
 
-        webDriver = new ChromeDriver(driverService, options);
-
-        Constants.SdarotUrls.BaseDomain = await SdarotHelper.RetrieveSdarotDomain();
-        httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
+        _webDriver = new ChromeDriver(driverService, options);
 
         try
         {
-            await httpClient.GetAsync(Constants.SdarotUrls.TestUrl);
+            await _httpClient.GetAsync(Constants.SdarotUrls.TestUrl);
         }
         catch (WebDriverException)
         {
@@ -78,7 +79,7 @@ public class SdarotDriver
         return await IsLoggedIn();
     }
 
-    async Task NavigateAsync(string url) => await Task.Run(() => webDriver!.Navigate().GoToUrl(url));
+    async Task NavigateAsync(string url) => await Task.Run(() => _webDriver!.Navigate().GoToUrl(url));
 
     async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
@@ -88,7 +89,7 @@ public class SdarotDriver
         {
             try
             {
-                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by));
+                return new WebDriverWait(_webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by));
             }
             catch
             {
@@ -103,7 +104,7 @@ public class SdarotDriver
         {
             try
             {
-                return new WebDriverWait(webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
+                return new WebDriverWait(_webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
             }
             catch
             {
@@ -115,7 +116,7 @@ public class SdarotDriver
     CookieContainer RetrieveCookies()
     {
         CookieContainer cookies = new();
-        foreach (var cookie in webDriver!.Manage().Cookies.AllCookies)
+        foreach (var cookie in _webDriver!.Manage().Cookies.AllCookies)
         {
             cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
         }
@@ -123,17 +124,18 @@ public class SdarotDriver
         return cookies;
     }
 
-    public void Shutdown()
+    public void ShutdownWebDriver()
     {
-        if (IsInitialized)
+        if (IsDriverInitialized)
         {
-            webDriver?.Quit();
+            _webDriver?.Quit();
+            _webDriver = null;
         }
     }
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
-        var searchHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
+        var searchHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
         var doc = new HtmlDocument();
         doc.LoadHtml(searchHtml);
 
@@ -174,7 +176,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)
     {
-        var seriesHtml = await httpClient.GetStringAsync(series.SeriesUrl);
+        var seriesHtml = await _httpClient.GetStringAsync(series.SeriesUrl);
         var doc = new HtmlDocument();
         doc.LoadHtml(seriesHtml);
 
@@ -196,7 +198,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
-        var episodesHtml = await httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
+        var episodesHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
         var doc = new HtmlDocument();
         doc.LoadHtml(episodesHtml);
 
@@ -257,9 +259,9 @@ public class SdarotDriver
 
     public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
     {
-        if (!IsInitialized)
+        if (!IsDriverInitialized)
         {
-            throw new DriverNotInitializedException();
+            await InitializeWebDriver();
         }
 
         await NavigateToEpisodeAsync(episode);
@@ -270,7 +272,7 @@ public class SdarotDriver
         {
             var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
             if (secondsLeft is null)
-                throw new ElementNotFoundException(nameof(secondsLeft));
+                throw new ObjectDisposedException(nameof(_webDriver));
             var newSeconds = float.Parse(secondsLeft.Text);
             if (newSeconds != currSeconds)
             {
