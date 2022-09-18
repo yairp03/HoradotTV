@@ -13,7 +13,20 @@ internal class Program
         System.Console.InputEncoding = Encoding.Unicode;
         System.Console.OutputEncoding = Encoding.Unicode;
 
-        driver = new SdarotDriver();
+        try
+        {
+            driver = new SdarotDriver();
+        }
+        catch (ChromeIsNotInstalledException)
+        {
+            IOHelpers.Print("\nChrome is not installed. Please follow this guide to install it:\nhttps://github.com/yairp03/HoradotTV/wiki/Chrome-download-problem");
+            Environment.Exit(0);
+        }
+        catch (SdarotBlockedException)
+        {
+            IOHelpers.Print("\nSdarotTV is blocked. Please follow this guide to unblock it:\nhttps://github.com/yairp03/HoradotTV/wiki/SdarotTV-connection-problem");
+            Environment.Exit(0);
+        }
 
         while (true)
         {

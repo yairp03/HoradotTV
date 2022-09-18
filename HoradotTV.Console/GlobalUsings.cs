@@ -1,4 +1,5 @@
 ﻿global using SdarotAPI;
+global using SdarotAPI.Exceptions;
 global using SdarotAPI.Exceptions.WebsiteErrors;
 global using SdarotAPI.Models;
 global using Syroot.Windows.IO;
