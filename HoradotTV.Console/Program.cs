@@ -20,7 +20,7 @@ internal class Program
         while (true)
         {
             var series = await SearchSeries(driver);
-            if (series == null)
+            if (series is null)
                 continue;
 
             var downloadLocation = GetDownloadLocation();
@@ -162,7 +162,7 @@ internal class Program
                 IOHelpers.Print($"\n({i + 1}/{episodesList.Count})");
                 IOHelpers.Print($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
-                if (episodeMedia == null)
+                if (episodeMedia is null)
                 {
                     failedEpisodes.Add(episode);
                     IOHelpers.Print("Failed. Proceeding to next episode.");

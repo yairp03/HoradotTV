@@ -63,19 +63,19 @@ public class SdarotDriver
             return true;
 
         var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
-        if (loginPanelButton == null)
+        if (loginPanelButton is null)
             throw new ElementNotFoundException(nameof(loginPanelButton));
         loginPanelButton.Click();
         var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
-        if (usernameInput == null)
+        if (usernameInput is null)
             throw new ElementNotFoundException(nameof(usernameInput));
         var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
-        if (passwordInput == null)
+        if (passwordInput is null)
             throw new ElementNotFoundException(nameof(passwordInput));
         usernameInput.SendKeys(username);
         passwordInput.SendKeys(password);
         var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
-        if (loginButton == null)
+        if (loginButton is null)
             throw new ElementNotFoundException(nameof(loginButton));
         await Task.Delay(1000);
         loginButton.Click();
@@ -170,11 +170,11 @@ public class SdarotDriver
         if (webDriver!.Url.StartsWith(Constants.SdarotUrls.WatchUrl))
         {
             var seriesNameElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesName));
-            if (seriesNameElement == null)
+            if (seriesNameElement is null)
                 throw new ElementNotFoundException(nameof(seriesNameElement));
             var seriesName = seriesNameElement.Text.Trim(new char[] { ' ', '/' });
             var imageUrlElement = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageSeriesImage));
-            if (imageUrlElement == null)
+            if (imageUrlElement is null)
                 throw new ElementNotFoundException(nameof(imageUrlElement));
             var imageUrl = imageUrlElement.GetAttribute("src");
             return new SeriesInformation[] { new(seriesName, imageUrl) };
@@ -245,7 +245,7 @@ public class SdarotDriver
 
         var episodeElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.AjaxEpisode);
 
-        if (episodeElements == null || episodeElements.Count == 0)
+        if (episodeElements is null || episodeElements.Count == 0)
             return Enumerable.Empty<EpisodeInformation>();
 
         List<EpisodeInformation> episodes = new();
@@ -323,7 +323,7 @@ public class SdarotDriver
         while (currSeconds > 0)
         {
             var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
-            if (secondsLeft == null)
+            if (secondsLeft is null)
                 throw new ElementNotFoundException(nameof(secondsLeft));
             var newSeconds = float.Parse(secondsLeft.Text);
             if (newSeconds != currSeconds)
@@ -337,14 +337,14 @@ public class SdarotDriver
         {
             // Click button
             var proceedButton = await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId));
-            if (proceedButton == null)
+            if (proceedButton is null)
                 throw new ElementNotFoundException(nameof(proceedButton));
             proceedButton.Click();
         }
         catch
         {
             var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
-            if (errorMessage == null)
+            if (errorMessage is null)
                 throw new ElementNotFoundException(nameof(errorMessage));
 
             if (errorMessage.Text == Constants.Error2Message)
@@ -356,7 +356,7 @@ public class SdarotDriver
         }
 
         var episodeMedia = await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia));
-        if (episodeMedia == null)
+        if (episodeMedia is null)
             throw new ElementNotFoundException(nameof(episodeMedia));
         var mediaUrl = episodeMedia.GetAttribute("src");
         var cookies = RetrieveCookies();
