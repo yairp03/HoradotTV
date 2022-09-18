@@ -2,7 +2,7 @@
 
 internal class SdarotBlockedException : Exception
 {
-    public SdarotBlockedException()
+    public SdarotBlockedException() : base("The SdarotTV site is blocked.")
     {
     }
 
