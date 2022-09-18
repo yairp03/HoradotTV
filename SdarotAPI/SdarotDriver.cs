@@ -249,11 +249,6 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.EpisodeIndex..]);
         var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series)).ToArray()[(firstEpisode.Season.SeasonIndex + 1)..]);
 
@@ -280,11 +275,6 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeriesInformation series)
     {
-        if (!IsInitialized)
-        {
-            throw new DriverNotInitializedException();
-        }
-
         var seasons = await GetSeasonsAsync(series);
 
         List<EpisodeInformation> episodes = new();
