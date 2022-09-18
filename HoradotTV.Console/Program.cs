@@ -174,6 +174,7 @@ internal class Program
                 var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
                 Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
+                IOHelpers.Print("Download completed.");
             }
 
             if (retryFailed)
