@@ -37,14 +37,9 @@ public class SdarotDriver
 
         try
         {
-            await NavigateAsync(Constants.SdarotUrls.TestUrl);
+            await httpClient.GetAsync(Constants.SdarotUrls.TestUrl);
         }
         catch (WebDriverException)
-        {
-            throw new SdarotBlockedException();
-        }
-
-        if (webDriver.Title == "Privacy error")
         {
             throw new SdarotBlockedException();
         }
