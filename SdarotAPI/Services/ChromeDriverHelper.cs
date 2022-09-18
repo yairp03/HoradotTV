@@ -158,7 +158,7 @@ public class ChromeDriverHelper
             var chromePath = (string)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe", null, null)!;
             if (chromePath is null)
             {
-                throw new Exception("Google Chrome not found in registry");
+                throw new ChromeIsNotInstalledException("Google Chrome not found in registry");
             }
 
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(chromePath);
@@ -188,7 +188,7 @@ public class ChromeDriverHelper
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred trying to execute 'google-chrome --product-version'", ex);
+                throw new ChromeIsNotInstalledException("An error occurred trying to execute 'google-chrome --product-version'", ex);
             }
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -221,7 +221,7 @@ public class ChromeDriverHelper
             }
             catch (Exception ex)
             {
-                throw new Exception($"An error occurred trying to execute '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --version'", ex);
+                throw new ChromeIsNotInstalledException($"An error occurred trying to execute '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --version'", ex);
             }
         }
         else

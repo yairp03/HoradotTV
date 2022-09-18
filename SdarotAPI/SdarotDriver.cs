@@ -11,8 +11,19 @@ public class SdarotDriver
     public SdarotDriver(bool headless = true)
     {
         _headless = headless;
+
+        ChromeDriverHelper.GetChromeVersion().Wait(); // May throw ChromeIsNotInstalledException
         Constants.SdarotUrls.BaseDomain = SdarotHelper.RetrieveSdarotDomain().Result;
         _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
+
+        try
+        {
+            _httpClient.GetAsync(Constants.SdarotUrls.TestUrl).Wait();
+        }
+        catch
+        {
+            throw new SdarotBlockedException();
+        }
     }
 
     public async Task InitializeWebDriver()
@@ -35,15 +46,6 @@ public class SdarotDriver
         }
 
         _webDriver = new ChromeDriver(driverService, options);
-
-        try
-        {
-            await _httpClient.GetAsync(Constants.SdarotUrls.TestUrl);
-        }
-        catch (WebDriverException)
-        {
-            throw new SdarotBlockedException();
-        }
     }
 
     public async Task<bool> IsLoggedIn()
