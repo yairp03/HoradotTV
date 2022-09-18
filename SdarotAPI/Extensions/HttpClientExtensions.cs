@@ -12,7 +12,7 @@ internal static class HttpClientExtensions
 
         // Ignore progress reporting when no progress reporter was 
         // passed or when the content length is unknown
-        if (progress == null || !contentLength.HasValue)
+        if (progress is null || !contentLength.HasValue)
         {
             await download.CopyToAsync(destination, cancellationToken);
             return;
