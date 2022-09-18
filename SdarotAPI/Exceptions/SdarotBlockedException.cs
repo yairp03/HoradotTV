@@ -1,6 +1,6 @@
 ﻿namespace SdarotAPI.Exceptions;
 
-internal class SdarotBlockedException : Exception
+public class SdarotBlockedException : Exception
 {
     public SdarotBlockedException() : base("The SdarotTV site is blocked.")
     {

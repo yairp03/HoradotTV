@@ -1,6 +1,6 @@
 ﻿namespace SdarotAPI.Exceptions;
 
-internal class ChromeIsNotInstalledException : Exception
+public class ChromeIsNotInstalledException : Exception
 {
     public ChromeIsNotInstalledException() : base("Chrome is not installed.")
     {
