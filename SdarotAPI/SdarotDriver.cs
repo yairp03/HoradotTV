@@ -157,7 +157,7 @@ public class SdarotDriver
                 throw new ElementNotFoundException(nameof(imageUrlElement));
             var imageUrl = imageUrlElement.GetAttributeValue("src", "");
 
-            return new SeriesInformation[] { new(seriesName, imageUrl) };
+            return new SeriesInformation[] { new(HttpUtility.HtmlDecode(seriesName), imageUrl) };
         }
 
         var seriesElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SearchPageResult);
@@ -174,7 +174,7 @@ public class SdarotDriver
             var seriesNameHe = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe).InnerText;
             var seriesNameEn = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn).InnerText;
             var imageUrl = seriesElement.SelectSingleNode("img").GetAttributeValue("src", "");
-            seriesList.Add(new(seriesNameHe, seriesNameEn, imageUrl));
+            seriesList.Add(new(HttpUtility.HtmlDecode(seriesNameHe), HttpUtility.HtmlDecode(seriesNameEn), imageUrl));
         }
 
         return seriesList;
