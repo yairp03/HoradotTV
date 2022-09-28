@@ -98,9 +98,11 @@ internal class Program
         string path;
         do
         {
-            path = IOHelpers.Input($"\nEnter path for download (empty - {Constants.DEFAULT_DOWNLOAD_LOCATION}): ").Trim();
+            var settings = AppSettings.Default;
+            var defaultPath = !string.IsNullOrWhiteSpace(settings.LastPath) ? settings.LastPath : Constants.DEFAULT_DOWNLOAD_LOCATION;
+            path = IOHelpers.Input($"\nEnter path for download (empty - {defaultPath}): ").Trim();
             if (string.IsNullOrWhiteSpace(path))
-                path = Constants.DEFAULT_DOWNLOAD_LOCATION;
+                path = defaultPath;
 
             try
             {
@@ -110,6 +112,9 @@ internal class Program
                     IOHelpers.Print("Please enter a path to a directory.");
                     path = "";
                 }
+
+                settings.LastPath = path;
+                settings.Save();
             }
             catch
             {
