@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace SdarotAPITest;
+﻿namespace SdarotAPITest;
 
 [TestClass]
 public class ApiUnitTest
