@@ -47,6 +47,8 @@ internal class Program
             }
 
             var season = await GetSeason(driver, series);
+            if (season is null)
+                continue;
             if (mode == Modes.Season)
             {
                 await DownloadSeason(driver, season, downloadLocation);
@@ -54,6 +56,8 @@ internal class Program
             }
 
             var episode = await GetEpisode(driver, season);
+            if (episode is null)
+                continue;
             if (mode == Modes.Episode)
             {
                 await DownloadEpisode(driver, episode, downloadLocation);
@@ -61,6 +65,8 @@ internal class Program
             }
 
             var episodesAmount = GetEpisodesAmount();
+            if (episodesAmount == 0)
+                continue;
             await DownloadEpisodes(driver, episode, episodesAmount, downloadLocation);
         }
     }
@@ -70,7 +76,9 @@ internal class Program
         var searchResult = new List<SeriesInformation>();
         do
         {
-            var query = IOHelpers.Input("\nEnter series name or part of it: ");
+            var query = IOHelpers.Input("\nEnter series name or part of it (q - quit): ");
+            if (query == "q")
+                Environment.Exit(0);
             if (query.Length < Constants.QUERY_MIN_LENGTH)
             {
                 IOHelpers.Print($"Please enter at least {Constants.QUERY_MIN_LENGTH} characters.");
@@ -132,25 +140,29 @@ internal class Program
         return (Modes)IOHelpers.ChooseOptionRange(Enum.GetNames(typeof(Modes)).Length - 1, "Choose a mode");
     }
 
-    static async Task<SeasonInformation> GetSeason(SdarotDriver driver, SeriesInformation series)
+    static async Task<SeasonInformation?> GetSeason(SdarotDriver driver, SeriesInformation series)
     {
         var seasons = await driver.GetSeasonsAsync(series);
         var seasonName = IOHelpers.ChooseOption(seasons.Select(s => s.SeasonName), "season", "Choose a season");
+        if (seasonName == "c")
+            return null;
         var season = seasons.Where(s => s.SeasonName == seasonName).First();
         return season;
     }
-    static async Task<EpisodeInformation> GetEpisode(SdarotDriver driver, SeasonInformation season)
+    static async Task<EpisodeInformation?> GetEpisode(SdarotDriver driver, SeasonInformation season)
     {
         var episodes = await driver.GetEpisodesAsync(season);
         var episodeName = IOHelpers.ChooseOption(episodes.Select(e => e.EpisodeName), "episode", "Choose an episode");
+        if (episodeName == "c")
+            return null;
         var episode = episodes.Where(e => e.EpisodeName == episodeName).First();
         return episode;
     }
 
     static int GetEpisodesAmount()
     {
-        var amount = IOHelpers.InputInt("\nEnter episodes amount: ");
-        while (amount <= 0)
+        var amount = IOHelpers.InputInt("\nEnter episodes amount (0 - cancel): ");
+        while (amount < 0)
         {
             IOHelpers.Print("Please enter a positive amount.");
             amount = IOHelpers.InputInt("Enter episodes amount: ");
