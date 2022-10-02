@@ -40,6 +40,7 @@ The GUI app is currently on hold.
 Contributors who are willing to help use the SdarotAPI library to build the GUI app are welcome to contact me.
 
 ## Future Development
+- Release updater.
 - Support for SratimTV.
 - GUI app.
 - SdarotAPI in python.
