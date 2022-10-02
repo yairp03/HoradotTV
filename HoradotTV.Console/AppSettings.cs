@@ -7,6 +7,8 @@ public class AppSettings
     private const string filePath = "appsettings.json";
 
     public string? LastPath { get; set; }
+    public string? SdarotUsername { get; set; }
+    public string? SdarotPassword { get; set; }
 
     private static AppSettings LoadSettings()
     {
@@ -26,4 +28,13 @@ public class AppSettings
         var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, filePath);
         File.WriteAllText(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = true }));
     }
+
+    public void SaveCredentials(string username, string password)
+    {
+        SdarotUsername = username;
+        SdarotPassword = password;
+        Save();
+    }
+
+    public void ResetCredentials() => SaveCredentials(string.Empty, string.Empty);
 }

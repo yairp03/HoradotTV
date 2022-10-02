@@ -248,6 +248,21 @@ internal class Program
             return;
 
         IOHelpers.Print("\nYou need to log in to download episodes.");
+
+        var settings = AppSettings.Default;
+        if (!string.IsNullOrWhiteSpace(settings.SdarotUsername) && !string.IsNullOrWhiteSpace(settings.SdarotPassword))
+        {
+            IOHelpers.Print("\nSaved credentials detected. Trying to log in...");
+            if (await driver.Login(settings.SdarotUsername, settings.SdarotPassword))
+            {
+                IOHelpers.Print("Logged in successfully, proceeding.");
+                return;
+            }
+
+            settings.ResetCredentials();
+            IOHelpers.Print("Bad credentials, proceeding to manual login.");
+        }
+
         while (true)
         {
             var username = IOHelpers.Input("\nUsername or email: ");
@@ -255,6 +270,7 @@ internal class Program
             if (await driver.Login(username, password))
             {
                 IOHelpers.Print("Logged in successfully, proceeding.");
+                settings.SaveCredentials(username, password);
                 return;
             }
 
