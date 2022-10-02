@@ -7,6 +7,9 @@ internal static class Constants
     public static int QUERY_MIN_LENGTH = 2;
 
     public static string DEFAULT_DOWNLOAD_LOCATION = KnownFolders.Downloads.Path;
+
+    public static string ChromeDownloadProblemGuide = "https://github.com/yairp03/HoradotTV/wiki/Chrome-download-problem";
+    public static string SdarotTVConnectionProblemGuide = "https://github.com/yairp03/HoradotTV/wiki/SdarotTV-connection-problem";
 }
 
 internal static class Menus

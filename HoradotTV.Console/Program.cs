@@ -19,12 +19,12 @@ internal class Program
         }
         catch (ChromeIsNotInstalledException)
         {
-            IOHelpers.Print("\nChrome is not installed. Please follow this guide to install it:\nhttps://github.com/yairp03/HoradotTV/wiki/Chrome-download-problem");
+            IOHelpers.Print($"\nChrome is not installed. Please follow this guide to install it:\n{Constants.ChromeDownloadProblemGuide}");
             Environment.Exit(0);
         }
         catch (SdarotBlockedException)
         {
-            IOHelpers.Print("\nSdarotTV is blocked. Please follow this guide to unblock it:\nhttps://github.com/yairp03/HoradotTV/wiki/SdarotTV-connection-problem");
+            IOHelpers.Print($"\nSdarotTV is blocked. Please follow this guide to unblock it:\n{Constants.SdarotTVConnectionProblemGuide}");
             Environment.Exit(0);
         }
 
