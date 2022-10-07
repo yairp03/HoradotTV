@@ -8,10 +8,7 @@ public static class SdarotHelper
         return (await client.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
     }
 
-    public static async Task<string> GetSdarotTestUrl()
-    {
-        return $"https://{await RetrieveSdarotDomain()}/watch/1";
-    }
+    public static async Task<string> GetSdarotTestUrl() => $"https://{await RetrieveSdarotDomain()}/watch/1";
 
     public static async Task DownloadEpisode(EpisodeMediaDetails episode, string downloadLocation, IProgress<long>? progress = null, CancellationToken ct = default)
     {
