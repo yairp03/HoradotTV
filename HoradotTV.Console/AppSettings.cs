@@ -9,6 +9,7 @@ public class AppSettings
     public string? LastPath { get; set; }
     public string? SdarotUsername { get; set; }
     public string? SdarotPassword { get; set; }
+    public bool ForceDownload { get; set; } = false;
 
     private static AppSettings LoadSettings()
     {
