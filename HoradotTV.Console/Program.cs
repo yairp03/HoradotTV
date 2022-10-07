@@ -192,9 +192,35 @@ internal class Program
 
             var episodesList = episodes.ToList();
 
+            if (!AppSettings.Default.ForceDownload)
+            {
+                List<EpisodeInformation> filteredList = new();
+                foreach (var episode in episodesList)
+                {
+                    if (!File.Exists(GetFullDownloadLocation(downloadLocation, episode)))
+                    {
+                        filteredList.Add(episode);
+                    }
+                }
+
+                var exists = episodesList.Count - filteredList.Count;
+                if (exists > 0)
+                {
+                    IOHelpers.Print($"\nFound {exists} existing episodes. Ignoring them.");
+                    episodesList = filteredList;
+                }
+            }
+
             foreach (var (episode, i) in episodesList.Select((value, i) => (value, i)))
             {
                 IOHelpers.Print($"\n({i + 1}/{episodesList.Count})");
+                var finalLocation = GetFullDownloadLocation(downloadLocation, episode);
+                if (File.Exists(finalLocation) && !AppSettings.Default.ForceDownload)
+                {
+                    IOHelpers.Print($"{episode.Season.SeasonString} {episode.EpisodeString} already downloaded. Skipping.");
+                    continue;
+                }
+
                 IOHelpers.Log($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
                 if (episodeMedia is null)
@@ -205,8 +231,6 @@ internal class Program
                 }
 
                 IOHelpers.Log($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
-                var cleanSeriesName = string.Concat(episode.Series.SeriesNameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
-                var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
                 Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
                 IOHelpers.Log("Download completed.");
@@ -233,6 +257,13 @@ internal class Program
         }
 
         return null;
+    }
+
+    private static string GetFullDownloadLocation(string downloadLocation, EpisodeInformation episode)
+    {
+        var cleanSeriesName = string.Concat(episode.Series.SeriesNameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
+        var finalLocation = Path.Combine(downloadLocation, cleanSeriesName, episode.Season.SeasonString, episode.EpisodeString + ".mp4");
+        return finalLocation;
     }
 
     static void SummarizeDownload(int total, IEnumerable<EpisodeInformation>? failed = null)
