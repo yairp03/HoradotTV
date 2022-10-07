@@ -2,7 +2,7 @@
 
 internal static class Constants
 {
-    public static string SOFTWARE_VERSION = "1.2.0";
+    public static string SOFTWARE_VERSION = "1.3.0";
 
     public static int QUERY_MIN_LENGTH = 2;
 
