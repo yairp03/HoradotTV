@@ -7,29 +7,17 @@ public class ChromeDriverHelper
         BaseAddress = new Uri("https://chromedriver.storage.googleapis.com/")
     };
 
-    public static Task Install()
-    {
-        return Install(null, false);
-    }
+    public static Task Install() => Install(null, false);
 
-    public static Task Install(string chromeVersion)
-    {
-        return Install(chromeVersion, false);
-    }
+    public static Task Install(string chromeVersion) => Install(chromeVersion, false);
 
-    public static Task Install(bool forceDownload)
-    {
-        return Install(null, forceDownload);
-    }
+    public static Task Install(bool forceDownload) => Install(null, forceDownload);
 
     public static async Task Install(string? chromeVersion, bool forceDownload)
     {
         // Instructions from https://chromedriver.chromium.org/downloads/version-selection
         //   First, find out which version of Chrome you are using. Let's say you have Chrome 72.0.3626.81.
-        if (chromeVersion is null)
-        {
-            chromeVersion = await GetChromeVersion();
-        }
+        chromeVersion ??= await GetChromeVersion();
 
         //   Take the Chrome version number, remove the last part, 
         chromeVersion = chromeVersion[..chromeVersion.LastIndexOf('.')];
