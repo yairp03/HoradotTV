@@ -1,6 +1,6 @@
 ﻿namespace HoradotTV.Console;
 
-internal class Program
+internal static class Program
 {
     private static SdarotDriver? driver;
 
@@ -279,7 +279,7 @@ internal class Program
 
             return failedEpisodes;
         }
-        catch { }
+        catch { /* Every exception thrown */ }
         finally
         {
             driver.ShutdownWebDriver();

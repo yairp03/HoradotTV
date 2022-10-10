@@ -10,9 +10,13 @@ public static class SdarotHelper
 
     public static async Task<string> GetSdarotTestUrl() => $"https://{await RetrieveSdarotDomain()}/watch/1";
 
-    public static async Task DownloadEpisode(EpisodeMediaDetails episode, string downloadLocation, IProgress<long>? progress = null, CancellationToken ct = default)
+    public static async Task DownloadEpisode(EpisodeMediaDetails episode, string downloadLocation) => await DownloadEpisode(episode, downloadLocation, null);
+    public static async Task DownloadEpisode(EpisodeMediaDetails episode, string downloadLocation, IProgress<long>? progress) => await DownloadEpisode(episode, downloadLocation, progress, default);
+
+
+    public static async Task DownloadEpisode(EpisodeMediaDetails episode, string downloadLocation, IProgress<long>? progress, CancellationToken ct)
     {
-        using var handler = new HttpClientHandler() { CookieContainer = episode.Cookies };
+        using var handler = new HttpClientHandler { CookieContainer = episode.Cookies };
         using var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
         using var file = new FileStream(downloadLocation, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -21,7 +25,7 @@ public static class SdarotHelper
 
     public static async Task<long?> GetEpisodeSize(EpisodeMediaDetails episode)
     {
-        using var handler = new HttpClientHandler() { CookieContainer = episode.Cookies };
+        using var handler = new HttpClientHandler { CookieContainer = episode.Cookies };
         using var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
         // Get the http headers first to examine the content length
