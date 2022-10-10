@@ -201,7 +201,7 @@ internal class Program
 
     private static async Task DownloadSeries(SdarotDriver driver, SeriesInformation series, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(series), downloadLocation);
     private static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
-    private static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new EpisodeInformation[] { episode }, downloadLocation);
+    private static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new[] { episode }, downloadLocation);
     private static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
 
     private static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
