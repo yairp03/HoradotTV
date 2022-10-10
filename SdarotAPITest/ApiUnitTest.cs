@@ -9,7 +9,10 @@ public class ApiUnitTest
         await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
-        _ = new(ignoreChecks: true);
+
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+        SdarotDriver driver = new(ignoreChecks: true);
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 
         sw.Stop();
 
