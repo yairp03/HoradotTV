@@ -1,4 +1,6 @@
-﻿namespace SdarotAPITest;
+﻿using SdarotAPI.Models;
+
+namespace SdarotAPITest;
 
 [TestClass]
 public class ApiUnitTest
@@ -48,7 +50,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(ignoreChecks: true);
 
-        var series = (await driver.SearchSeries("family guy")).ToList()[0];
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
 
         Stopwatch sw = new();
         sw.Start();
@@ -66,8 +68,8 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(ignoreChecks: true);
 
-        var series = (await driver.SearchSeries("family guy")).ToList()[0];
-        var season = (await driver.GetSeasonsAsync(series)).ToList()[3];
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
+        SeasonInformation season = new(4, 3, "4", series);
 
         Stopwatch sw = new();
         sw.Start();
