@@ -2,9 +2,9 @@
 
 public class SdarotDriver
 {
-    ChromeDriver? _webDriver;
-    readonly HttpClient _httpClient = new();
-    readonly bool _headless;
+    private ChromeDriver? _webDriver;
+    private readonly HttpClient _httpClient = new();
+    private readonly bool _headless;
 
     public bool IsDriverInitialized => _webDriver is not null;
 
@@ -13,7 +13,10 @@ public class SdarotDriver
         _headless = headless;
 
         if (!ignoreChecks)
+        {
             ChromeDriverHelper.GetChromeVersion().Wait(); // May throw ChromeIsNotInstalledException
+        }
+
         Constants.SdarotUrls.BaseDomain = SdarotHelper.RetrieveSdarotDomain().Result;
         _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
 
@@ -62,34 +65,48 @@ public class SdarotDriver
     public async Task<bool> Login(string username, string password)
     {
         if (await IsLoggedIn())
+        {
             return true;
+        }
 
         var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
         if (loginPanelButton is null)
+        {
             throw new ElementNotFoundException(nameof(loginPanelButton));
+        }
+
         loginPanelButton.Click();
         var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
         if (usernameInput is null)
+        {
             throw new ElementNotFoundException(nameof(usernameInput));
+        }
+
         var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
         if (passwordInput is null)
+        {
             throw new ElementNotFoundException(nameof(passwordInput));
+        }
+
         usernameInput.SendKeys(username);
         passwordInput.SendKeys(password);
         var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
         if (loginButton is null)
+        {
             throw new ElementNotFoundException(nameof(loginButton));
+        }
+
         await Task.Delay(1000);
         loginButton.Click();
 
         return await IsLoggedIn();
     }
 
-    async Task NavigateAsync(string url) => await Task.Run(() => _webDriver!.Navigate().GoToUrl(url));
+    private async Task NavigateAsync(string url) => await Task.Run(() => _webDriver!.Navigate().GoToUrl(url));
 
-    async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
+    private async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
 
-    async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
+    private async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() =>
         {
@@ -104,7 +121,7 @@ public class SdarotDriver
         });
     }
 
-    async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
+    private async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
     {
         return await Task.Run(() =>
         {
@@ -119,7 +136,7 @@ public class SdarotDriver
         });
     }
 
-    CookieContainer RetrieveCookies()
+    private CookieContainer RetrieveCookies()
     {
         CookieContainer cookies = new();
         foreach (var cookie in _webDriver!.Manage().Cookies.AllCookies)
@@ -154,7 +171,10 @@ public class SdarotDriver
 
             var imageUrlElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesImage);
             if (imageUrlElement is null)
+            {
                 throw new ElementNotFoundException(nameof(imageUrlElement));
+            }
+
             var imageUrl = imageUrlElement.GetAttributeValue("src", "");
 
             return new SeriesInformation[] { new(HttpUtility.HtmlDecode(seriesName), imageUrl) };
@@ -164,7 +184,9 @@ public class SdarotDriver
 
         // In case there are no results
         if (seriesElements is null || seriesElements.Count == 0)
+        {
             return Enumerable.Empty<SeriesInformation>();
+        }
 
         // In case there are more than one result
 
@@ -189,7 +211,9 @@ public class SdarotDriver
         var seasonElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SeriesPageSeason);
 
         if (seasonElements is null || seasonElements.Count == 0)
+        {
             return Enumerable.Empty<SeasonInformation>();
+        }
 
         List<SeasonInformation> seasons = new();
         foreach (var (season, i) in seasonElements.Select((season, i) => (season, i)))
@@ -211,7 +235,9 @@ public class SdarotDriver
         var episodeElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.AjaxEpisode);
 
         if (episodeElements is null || episodeElements.Count == 0)
+        {
             return Enumerable.Empty<EpisodeInformation>();
+        }
 
         List<EpisodeInformation> episodes = new();
         foreach (var (episode, i) in episodeElements.Select((episode, i) => (episode, i)))
@@ -278,7 +304,10 @@ public class SdarotDriver
         {
             var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
             if (secondsLeft is null)
+            {
                 throw new ObjectDisposedException(nameof(_webDriver));
+            }
+
             var newSeconds = float.Parse(secondsLeft.Text);
             if (newSeconds != currSeconds)
             {
@@ -292,14 +321,19 @@ public class SdarotDriver
             // Click button
             var proceedButton = await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId));
             if (proceedButton is null)
+            {
                 throw new ElementNotFoundException(nameof(proceedButton));
+            }
+
             proceedButton.Click();
         }
         catch
         {
             var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
             if (errorMessage is null)
+            {
                 throw new ElementNotFoundException(nameof(errorMessage));
+            }
 
             if (errorMessage.Text == Constants.Error2Message)
             {
@@ -311,7 +345,10 @@ public class SdarotDriver
 
         var episodeMedia = await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia));
         if (episodeMedia is null)
+        {
             throw new ElementNotFoundException(nameof(episodeMedia));
+        }
+
         var mediaUrl = episodeMedia.GetAttribute("src");
         var cookies = RetrieveCookies();
 

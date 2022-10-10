@@ -43,7 +43,10 @@ internal static class IOHelpers
             Print($"\nAvailable {type}s: " + string.Join(", ", options));
             option = Input($"{title} (c - cancel): ");
             if (option == "c" || options.Contains(option))
+            {
                 return option;
+            }
+
             Print($"Please enter an valid {type}.");
         } while (true);
     }

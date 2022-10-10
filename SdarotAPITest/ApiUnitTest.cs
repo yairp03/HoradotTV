@@ -1,4 +1,6 @@
-﻿namespace SdarotAPITest;
+﻿using SdarotAPI.Models;
+
+namespace SdarotAPITest;
 
 [TestClass]
 public class ApiUnitTest
@@ -10,7 +12,9 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
         SdarotDriver driver = new(ignoreChecks: true);
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 
         sw.Stop();
 
@@ -34,7 +38,7 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.SearchSeries(query);
+        _ = await driver.SearchSeries(query);
 
         sw.Stop();
         return sw.Elapsed;
@@ -46,12 +50,12 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(ignoreChecks: true);
 
-        var series = (await driver.SearchSeries("family guy")).ToList()[0];
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
 
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.GetSeasonsAsync(series);
+        _ = await driver.GetSeasonsAsync(series);
 
         sw.Stop();
 
@@ -64,13 +68,13 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(ignoreChecks: true);
 
-        var series = (await driver.SearchSeries("family guy")).ToList()[0];
-        var season = (await driver.GetSeasonsAsync(series)).ToList()[3];
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
+        SeasonInformation season = new(4, 3, "4", series);
 
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.GetEpisodesAsync(season);
+        _ = await driver.GetEpisodesAsync(season);
 
         sw.Stop();
 
