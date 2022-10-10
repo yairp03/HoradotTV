@@ -8,7 +8,11 @@ public class SdarotDriver
 
     public bool IsDriverInitialized => _webDriver is not null;
 
-    public SdarotDriver(bool headless = true, bool ignoreChecks = false)
+    public SdarotDriver() : this(false) { }
+
+    public SdarotDriver(bool ignoreChecks) : this(ignoreChecks, true) { }
+
+    public SdarotDriver(bool ignoreChecks, bool headless)
     {
         _headless = headless;
 
@@ -167,7 +171,7 @@ public class SdarotDriver
         // In case there is only one result
         if (seriesNameElement is not null)
         {
-            var seriesName = seriesNameElement.InnerText.Trim(new char[] { ' ', '/' });
+            var seriesName = seriesNameElement.InnerText.Trim(new[] { ' ', '/' });
 
             var imageUrlElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesImage);
             if (imageUrlElement is null)
@@ -177,7 +181,7 @@ public class SdarotDriver
 
             var imageUrl = imageUrlElement.GetAttributeValue("src", "");
 
-            return new SeriesInformation[] { new(HttpUtility.HtmlDecode(seriesName), imageUrl) };
+            return new SeriesInformation(HttpUtility.HtmlDecode(seriesName), imageUrl).Yield();
         }
 
         var seriesElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SearchPageResult);
@@ -256,7 +260,7 @@ public class SdarotDriver
         var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series)).ToArray()[(firstEpisode.Season.SeasonIndex + 1)..]);
 
         List<EpisodeInformation> episodes = new();
-        for (var i = 0; i < maxEpisodeAmount; i++)
+        while (episodes.Count < maxEpisodeAmount)
         {
             if (episodesBuffer.Count == 0)
             {
@@ -266,7 +270,6 @@ public class SdarotDriver
                 }
 
                 episodesBuffer = new(await GetEpisodesAsync(seasonBuffer.Dequeue()));
-                i--;
                 continue;
             }
 
@@ -289,7 +292,9 @@ public class SdarotDriver
         return episodes;
     }
 
-    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress = null)
+    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode) => await GetEpisodeMediaDetailsAsync(episode, null);
+
+    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress)
     {
         if (!IsDriverInitialized)
         {
@@ -309,7 +314,7 @@ public class SdarotDriver
             }
 
             var newSeconds = float.Parse(secondsLeft.Text);
-            if (newSeconds != currSeconds)
+            if (newSeconds < currSeconds)
             {
                 currSeconds = newSeconds;
                 progress?.Report(30 - currSeconds);

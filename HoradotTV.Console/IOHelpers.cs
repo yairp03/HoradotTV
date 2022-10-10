@@ -30,7 +30,6 @@ internal static class IOHelpers
             catch (FormatException)
             {
                 Print("Please enter a number.");
-                continue;
             }
         }
     }

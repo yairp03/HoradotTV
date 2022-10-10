@@ -9,7 +9,7 @@ public class AppSettings
     public string? LastPath { get; set; }
     public string? SdarotUsername { get; set; }
     public string? SdarotPassword { get; set; }
-    public bool ForceDownload { get; set; } = false;
+    public bool ForceDownload { get; set; }
 
     private static AppSettings LoadSettings()
     {
@@ -27,7 +27,7 @@ public class AppSettings
     public void Save()
     {
         var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, filePath);
-        File.WriteAllText(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = true }));
+        File.WriteAllText(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
     }
 
     public void SaveCredentials(string username, string password)

@@ -1,6 +1,6 @@
 ﻿namespace SdarotAPI.Services;
 
-public class ChromeDriverHelper
+public static class ChromeDriverHelper
 {
     private static readonly HttpClient httpClient = new()
     {

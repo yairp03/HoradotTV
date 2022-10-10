@@ -12,9 +12,7 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
-        SdarotDriver driver = new(ignoreChecks: true);
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
+        _ = new SdarotDriver(true);
 
         sw.Stop();
 
@@ -24,7 +22,7 @@ public class ApiUnitTest
     [TestMethod]
     public async Task SearchTest()
     {
-        SdarotDriver driver = new(ignoreChecks: true);
+        SdarotDriver driver = new(true);
 
         Trace.WriteLine($"No results: {(await MeasureSearch(driver, "dsakdjaslkfjsalkjfas")).TotalSeconds} seconds.");
         Trace.WriteLine($"15 results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
@@ -48,7 +46,7 @@ public class ApiUnitTest
     public async Task SeasonsTest()
     {
         await Task.Delay(500);
-        SdarotDriver driver = new(ignoreChecks: true);
+        SdarotDriver driver = new(true);
 
         SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
 
@@ -66,7 +64,7 @@ public class ApiUnitTest
     public async Task EpisodesTest()
     {
         await Task.Delay(500);
-        SdarotDriver driver = new(ignoreChecks: true);
+        SdarotDriver driver = new(true);
 
         SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
         SeasonInformation season = new(4, 3, "4", series);

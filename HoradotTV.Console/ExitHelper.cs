@@ -5,7 +5,7 @@ internal static class ExitHelper
     public static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
 
     public delegate bool EventHandler(CtrlType sig);
-    public static EventHandler? _handler;
+    private static EventHandler? _handler;
     private static Action? func;
 
     public enum CtrlType
@@ -21,7 +21,7 @@ internal static class ExitHelper
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            _handler += new EventHandler(Handler);
+            _handler += Handler;
             _ = SetConsoleCtrlHandler(_handler, true);
             func = shutDown;
         }
@@ -29,16 +29,7 @@ internal static class ExitHelper
 
     public static bool Handler(CtrlType sig)
     {
-        switch (sig)
-        {
-            case CtrlType.CTRL_C_EVENT:
-            case CtrlType.CTRL_LOGOFF_EVENT:
-            case CtrlType.CTRL_SHUTDOWN_EVENT:
-            case CtrlType.CTRL_CLOSE_EVENT:
-            default:
-                func?.Invoke();
-                break;
-        }
+        func?.Invoke();
 
         return true;
     }
