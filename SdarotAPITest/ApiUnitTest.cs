@@ -9,8 +9,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
-
-        SdarotDriver driver = new(ignoreChecks: true);
+        _ = new(ignoreChecks: true);
 
         sw.Stop();
 
@@ -34,7 +33,7 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.SearchSeries(query);
+        _ = await driver.SearchSeries(query);
 
         sw.Stop();
         return sw.Elapsed;
@@ -51,7 +50,7 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.GetSeasonsAsync(series);
+        _ = await driver.GetSeasonsAsync(series);
 
         sw.Stop();
 
@@ -70,7 +69,7 @@ public class ApiUnitTest
         Stopwatch sw = new();
         sw.Start();
 
-        await driver.GetEpisodesAsync(season);
+        _ = await driver.GetEpisodesAsync(season);
 
         sw.Stop();
 

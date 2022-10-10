@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace HoradotTV.Console;
+﻿namespace HoradotTV.Console;
 internal static class ExitHelper
 {
     [DllImport("Kernel32")]
@@ -8,8 +6,7 @@ internal static class ExitHelper
 
     public delegate bool EventHandler(CtrlType sig);
     public static EventHandler? _handler;
-
-    static Action? func;
+    private static Action? func;
 
     public enum CtrlType
     {
@@ -25,7 +22,7 @@ internal static class ExitHelper
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             _handler += new EventHandler(Handler);
-            SetConsoleCtrlHandler(_handler, true);
+            _ = SetConsoleCtrlHandler(_handler, true);
             func = shutDown;
         }
     }

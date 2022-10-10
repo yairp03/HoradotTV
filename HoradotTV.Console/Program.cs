@@ -2,9 +2,9 @@
 
 internal class Program
 {
-    static SdarotDriver? driver;
+    private static SdarotDriver? driver;
 
-    static async Task Main()
+    private static async Task Main()
     {
         IOHelpers.Print($"Welcome to HoradotTV {Constants.SOFTWARE_VERSION}!");
         IOHelpers.Print("Initializing...");
@@ -32,14 +32,19 @@ internal class Program
         {
             var series = await SearchSeries(driver);
             if (series is null)
+            {
                 continue;
+            }
 
             var downloadLocation = GetDownloadLocation();
             IOHelpers.Print("Full download path: " + Path.GetFullPath(downloadLocation));
 
             var mode = GetMode();
             if (mode == Modes.None)
+            {
                 continue;
+            }
+
             if (mode == Modes.Series)
             {
                 await DownloadSeries(driver, series, downloadLocation);
@@ -48,7 +53,10 @@ internal class Program
 
             var season = await GetSeason(driver, series);
             if (season is null)
+            {
                 continue;
+            }
+
             if (mode == Modes.Season)
             {
                 await DownloadSeason(driver, season, downloadLocation);
@@ -57,7 +65,10 @@ internal class Program
 
             var episode = await GetEpisode(driver, season);
             if (episode is null)
+            {
                 continue;
+            }
+
             if (mode == Modes.Episode)
             {
                 await DownloadEpisode(driver, episode, downloadLocation);
@@ -66,19 +77,25 @@ internal class Program
 
             var episodesAmount = GetEpisodesAmount();
             if (episodesAmount == 0)
+            {
                 continue;
+            }
+
             await DownloadEpisodes(driver, episode, episodesAmount, downloadLocation);
         }
     }
 
-    static async Task<SeriesInformation?> SearchSeries(SdarotDriver driver)
+    private static async Task<SeriesInformation?> SearchSeries(SdarotDriver driver)
     {
         var searchResult = new List<SeriesInformation>();
         do
         {
             var query = IOHelpers.Input("\nEnter series name or part of it (q - quit): ");
             if (query == "q")
+            {
                 Environment.Exit(0);
+            }
+
             if (query.Length < Constants.QUERY_MIN_LENGTH)
             {
                 IOHelpers.Print($"Please enter at least {Constants.QUERY_MIN_LENGTH} characters.");
@@ -87,7 +104,9 @@ internal class Program
 
             searchResult = (await driver.SearchSeries(query)).ToList();
             if (searchResult.Count == 0)
+            {
                 IOHelpers.Print("Series not found.");
+            }
         } while (searchResult.Count == 0);
 
         IOHelpers.Print("\nResults:");
@@ -101,7 +120,7 @@ internal class Program
         return selection == 0 ? null : searchResult[selection - 1];
     }
 
-    static string GetDownloadLocation()
+    private static string GetDownloadLocation()
     {
         string path;
         do
@@ -110,7 +129,9 @@ internal class Program
             var defaultPath = !string.IsNullOrWhiteSpace(settings.LastPath) ? settings.LastPath : Constants.DEFAULT_DOWNLOAD_LOCATION;
             path = IOHelpers.Input($"\nEnter path for download (empty - {defaultPath}): ").Trim();
             if (string.IsNullOrWhiteSpace(path))
+            {
                 path = defaultPath;
+            }
 
             try
             {
@@ -134,32 +155,39 @@ internal class Program
         return path;
     }
 
-    static Modes GetMode()
+    private static Modes GetMode()
     {
         IOHelpers.Print("\n" + Menus.MODES_MENU);
         return (Modes)IOHelpers.ChooseOptionRange(Enum.GetNames(typeof(Modes)).Length - 1, "Choose a mode");
     }
 
-    static async Task<SeasonInformation?> GetSeason(SdarotDriver driver, SeriesInformation series)
+    private static async Task<SeasonInformation?> GetSeason(SdarotDriver driver, SeriesInformation series)
     {
         var seasons = await driver.GetSeasonsAsync(series);
         var seasonName = IOHelpers.ChooseOption(seasons.Select(s => s.SeasonName), "season", "Choose a season");
         if (seasonName == "c")
+        {
             return null;
+        }
+
         var season = seasons.Where(s => s.SeasonName == seasonName).First();
         return season;
     }
-    static async Task<EpisodeInformation?> GetEpisode(SdarotDriver driver, SeasonInformation season)
+
+    private static async Task<EpisodeInformation?> GetEpisode(SdarotDriver driver, SeasonInformation season)
     {
         var episodes = await driver.GetEpisodesAsync(season);
         var episodeName = IOHelpers.ChooseOption(episodes.Select(e => e.EpisodeName), "episode", "Choose an episode");
         if (episodeName == "c")
+        {
             return null;
+        }
+
         var episode = episodes.Where(e => e.EpisodeName == episodeName).First();
         return episode;
     }
 
-    static int GetEpisodesAmount()
+    private static int GetEpisodesAmount()
     {
         var amount = IOHelpers.InputInt("\nEnter episodes amount (0 - cancel): ");
         while (amount < 0)
@@ -171,11 +199,12 @@ internal class Program
         return amount;
     }
 
-    static async Task DownloadSeries(SdarotDriver driver, SeriesInformation series, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(series), downloadLocation);
-    static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
-    static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new EpisodeInformation[] { episode }, downloadLocation);
-    static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
-    static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
+    private static async Task DownloadSeries(SdarotDriver driver, SeriesInformation series, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(series), downloadLocation);
+    private static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
+    private static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new EpisodeInformation[] { episode }, downloadLocation);
+    private static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
+
+    private static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
     {
         try
         {
@@ -231,7 +260,7 @@ internal class Program
                 }
 
                 IOHelpers.Log($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
-                Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
+                _ = Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
                 IOHelpers.Log("Download completed.");
             }
@@ -266,7 +295,7 @@ internal class Program
         return finalLocation;
     }
 
-    static void SummarizeDownload(int total, IEnumerable<EpisodeInformation>? failed = null)
+    private static void SummarizeDownload(int total, IEnumerable<EpisodeInformation>? failed = null)
     {
         failed ??= Enumerable.Empty<EpisodeInformation>();
         var success = total - failed.Count();
@@ -285,10 +314,12 @@ internal class Program
         }
     }
 
-    static async Task LoginToWebsite(SdarotDriver driver)
+    private static async Task LoginToWebsite(SdarotDriver driver)
     {
         if (await driver.IsLoggedIn())
+        {
             return;
+        }
 
         IOHelpers.Print("\nYou need to log in to download episodes.");
 
@@ -320,7 +351,8 @@ internal class Program
             IOHelpers.Print("Bad credentials, please try again.");
         }
     }
-    static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
+
+    private static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
     {
         do
         {
@@ -336,7 +368,10 @@ internal class Program
             catch
             {
                 if (retries > 0)
+                {
                     IOHelpers.Log($"Failed. Trying again... ({retries} tries left)");
+                }
+
                 retries--;
 
             }
@@ -345,7 +380,7 @@ internal class Program
         return null;
     }
 
-    static void Shutdown()
+    private static void Shutdown()
     {
         driver?.ShutdownWebDriver();
         Environment.Exit(0);
