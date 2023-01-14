@@ -1,6 +1,4 @@
-﻿using SdarotAPI.Models;
-
-namespace SdarotAPITest;
+﻿namespace SdarotAPITest;
 
 [TestClass]
 public class ApiUnitTest
@@ -21,6 +19,17 @@ public class ApiUnitTest
 
     [TestMethod]
     public async Task SearchTest()
+    {
+        SdarotDriver driver = new(true);
+
+        Assert.AreEqual(0, (await driver.SearchSeries("dsakdjaslkfjsalkjfas")).Count());
+        Assert.AreEqual(15, (await driver.SearchSeries("שמש")).Count());
+        Assert.AreEqual(74, (await driver.SearchSeries("ana")).Count());
+        Assert.AreEqual(1, (await driver.SearchSeries("shemesh")).Count());
+    }
+
+    [TestMethod]
+    public async Task SearchTestBenchmark()
     {
         SdarotDriver driver = new(true);
 
@@ -48,7 +57,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(true);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
+        SeriesInformation series = new("איש משפחה / Family Guy", 1);
 
         Stopwatch sw = new();
         sw.Start();
@@ -66,7 +75,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(true);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
+        SeriesInformation series = new("איש משפחה / Family Guy", 1);
         SeasonInformation season = new(4, 3, "4", series);
 
         Stopwatch sw = new();

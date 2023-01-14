@@ -1,11 +1,11 @@
 namespace SdarotAPI.Models;
 
-public class SeriesInformation
+public partial class SeriesInformation
 {
     public string SeriesNameHe { get; set; }
     public string SeriesNameEn { get; set; }
     public int SeriesCode { get; set; }
-    public string ImageUrl { get; set; }
+    public string ImageUrl => $"{Constants.SdarotUrls.ImageUrl}{SeriesCode}.jpg";
 
     public string SeriesUrl => $"{Constants.SdarotUrls.WatchUrl}{SeriesCode}";
 
@@ -13,8 +13,7 @@ public class SeriesInformation
     {
         SeriesNameHe = seriesNameHe;
         SeriesNameEn = seriesNameEn;
-        ImageUrl = imageUrl;
-        SeriesCode = GetSeriesCodeFromImageUrl(ImageUrl);
+        SeriesCode = GetSeriesCodeFromImageUrl(imageUrl);
     }
 
     public SeriesInformation(string seriesFullName, string imageUrl)
@@ -22,9 +21,11 @@ public class SeriesInformation
         var names = seriesFullName.Split('/');
         SeriesNameHe = names[0].Trim();
         SeriesNameEn = names[1].Trim();
-        ImageUrl = imageUrl;
-        SeriesCode = GetSeriesCodeFromImageUrl(ImageUrl);
+        SeriesCode = GetSeriesCodeFromImageUrl(imageUrl);
     }
 
-    public static int GetSeriesCodeFromImageUrl(string imageUrl) => int.Parse(Regex.Match(imageUrl, "\\d+").Value);
+    [GeneratedRegex("\\d+")]
+    private static partial Regex NumberRegex();
+
+    public static int GetSeriesCodeFromImageUrl(string imageUrl) => int.Parse(NumberRegex().Match(imageUrl).Value);
 }
