@@ -224,7 +224,9 @@ public class SdarotDriver
         var watchResult = await res.Content.ReadFromJsonAsync<WatchResult>();
 
         if (watchResult is null)
+        {
             throw new WebsiteErrorException("Unable to retrieve episode media url.");
+        }
 
         var bestResolution = watchResult.Watch.Max((res) => res.Key);
 
