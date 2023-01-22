@@ -24,7 +24,7 @@ public class ApiUnitTest
 
         Assert.AreEqual(0, (await driver.SearchSeries("dsakdjaslkfjsalkjfas")).Count());
         Assert.AreEqual(15, (await driver.SearchSeries("שמש")).Count());
-        Assert.AreEqual(74, (await driver.SearchSeries("ana")).Count());
+        Assert.AreEqual(75, (await driver.SearchSeries("ana")).Count());
         Assert.AreEqual(1, (await driver.SearchSeries("shemesh")).Count());
     }
 
@@ -35,7 +35,7 @@ public class ApiUnitTest
 
         Trace.WriteLine($"No results: {(await MeasureSearch(driver, "dsakdjaslkfjsalkjfas")).TotalSeconds} seconds.");
         Trace.WriteLine($"15 results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
-        Trace.WriteLine($"74 results: {(await MeasureSearch(driver, "ana")).TotalSeconds} seconds.");
+        Trace.WriteLine($"75 results: {(await MeasureSearch(driver, "ana")).TotalSeconds} seconds.");
         Trace.WriteLine($"One result: {(await MeasureSearch(driver, "shemesh")).TotalSeconds} seconds.");
     }
 
