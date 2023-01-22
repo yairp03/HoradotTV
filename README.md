@@ -54,7 +54,7 @@ Contributors who are willing to help use the SdarotAPI library to build the GUI 
 -   Release updater.
 -   Support for SratimTV.
 -   GUI app.
--   SdarotAPI in python.
+-   SdarotAPI in python. (In the meanwhile, check out [Xiddoc's project](https://github.com/Xiddoc/PySdarot))
 
 ## Contributing
 
