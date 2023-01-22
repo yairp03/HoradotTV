@@ -2,27 +2,21 @@
 
 public class SdarotDriver
 {
-    private ChromeDriver? _webDriver;
     private readonly HttpClient _httpClient = new();
-    private readonly bool _headless;
-
-    public bool IsDriverInitialized => _webDriver is not null;
 
     public SdarotDriver() : this(false) { }
 
-    public SdarotDriver(bool ignoreChecks) : this(ignoreChecks, true) { }
-
-    public SdarotDriver(bool ignoreChecks, bool headless)
+    public static async Task<string> RetrieveSdarotDomain()
     {
-        _headless = headless;
+        using HttpClient client = new();
+        return (await client.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
+    }
 
-        if (!ignoreChecks)
-        {
-            ChromeDriverHelper.GetChromeVersion().Wait(); // May throw ChromeIsNotInstalledException
-        }
-
-        Constants.SdarotUrls.BaseDomain = SdarotHelper.RetrieveSdarotDomain().Result;
+    public SdarotDriver(bool ignoreChecks)
+    {
+        Constants.SdarotUrls.BaseDomain = RetrieveSdarotDomain().Result;
         _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
 
         if (!ignoreChecks)
         {
@@ -37,127 +31,29 @@ public class SdarotDriver
         }
     }
 
-    public async Task InitializeWebDriver()
-    {
-        if (IsDriverInitialized)
-        {
-            return;
-        }
-
-        await ChromeDriverHelper.Install();
-
-        var driverService = ChromeDriverService.CreateDefaultService();
-        driverService.HideCommandPromptWindow = true;
-        ChromeOptions options = new();
-        options.AddArgument("user-agent=" + Constants.UserAgent);
-        if (_headless)
-        {
-            options.AddArgument("headless");
-            // options.AddArgument("--remote-debugging-port=9222"); // Sometimes cause the driver to not load
-        }
-
-        _webDriver = new ChromeDriver(driverService, options);
-    }
-
     public async Task<bool> IsLoggedIn()
     {
-        await NavigateAsync(Constants.SdarotUrls.HomeUrl);
-        var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
-        return loginPanelButton != null ? loginPanelButton.Text != Constants.LoginMessage : throw new ElementNotFoundException(nameof(loginPanelButton));
+        var searchHtml = await _httpClient.GetStringAsync(Constants.SdarotUrls.HomeUrl);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(searchHtml);
+
+        var loginPanelButton = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.MainPageLoginPanelButton);
+
+        return loginPanelButton != null ? loginPanelButton.InnerText != Constants.LoginMessage : throw new ElementNotFoundException(nameof(loginPanelButton));
     }
 
     public async Task<bool> Login(string username, string password)
     {
-        if (await IsLoggedIn())
+        Dictionary<string, string> data = new()
         {
-            return true;
-        }
+            ["username"] = username,
+            ["password"] = password,
+            ["submit_login"] = ""
+        };
 
-        var loginPanelButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginPanelButton));
-        if (loginPanelButton is null)
-        {
-            throw new ElementNotFoundException(nameof(loginPanelButton));
-        }
-
-        loginPanelButton.Click();
-        var usernameInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormUsername));
-        if (usernameInput is null)
-        {
-            throw new ElementNotFoundException(nameof(usernameInput));
-        }
-
-        var passwordInput = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageFormPassword));
-        if (passwordInput is null)
-        {
-            throw new ElementNotFoundException(nameof(passwordInput));
-        }
-
-        usernameInput.SendKeys(username);
-        passwordInput.SendKeys(password);
-        var loginButton = await FindElementAsync(By.XPath(Constants.XPathSelectors.MainPageLoginButton));
-        if (loginButton is null)
-        {
-            throw new ElementNotFoundException(nameof(loginButton));
-        }
-
-        await Task.Delay(1000);
-        loginButton.Click();
+        _ = await _httpClient.PostAsync(Constants.SdarotUrls.LoginUrl, new FormUrlEncodedContent(data));
 
         return await IsLoggedIn();
-    }
-
-    private async Task NavigateAsync(string url) => await Task.Run(() => _webDriver!.Navigate().GoToUrl(url));
-
-    private async Task NavigateToEpisodeAsync(EpisodeInformation episode) => await NavigateAsync(episode.EpisodeUrl);
-
-    private async Task<IWebElement?> FindElementAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                return new WebDriverWait(_webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementIsVisible(by));
-            }
-            catch
-            {
-                return null;
-            }
-        });
-    }
-
-    private async Task<IWebElement?> FindClickableElementAsync(By by, int timeout = 2)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                return new WebDriverWait(_webDriver, TimeSpan.FromSeconds(timeout)).Until(ExpectedConditions.ElementToBeClickable(by));
-            }
-            catch
-            {
-                return null;
-            }
-        });
-    }
-
-    private CookieContainer RetrieveCookies()
-    {
-        CookieContainer cookies = new();
-        foreach (var cookie in _webDriver!.Manage().Cookies.AllCookies)
-        {
-            cookies.Add(new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
-        }
-
-        return cookies;
-    }
-
-    public void ShutdownWebDriver()
-    {
-        if (IsDriverInitialized)
-        {
-            _webDriver?.Quit();
-            _webDriver = null;
-        }
     }
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
@@ -232,7 +128,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
-        var episodesHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
+        var episodesHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxWatchUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
         var doc = new HtmlDocument();
         doc.LoadHtml(episodesHtml);
 
@@ -292,71 +188,53 @@ public class SdarotDriver
         return episodes;
     }
 
-    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode) => await GetEpisodeMediaDetailsAsync(episode, null);
+    public async Task<string> GetEpisodeMediaUrlAsync(EpisodeInformation episode) => await GetEpisodeMediaUrlAsync(episode, null);
 
-    public async Task<EpisodeMediaDetails> GetEpisodeMediaDetailsAsync(EpisodeInformation episode, IProgress<float>? progress)
+    public async Task<string> GetEpisodeMediaUrlAsync(EpisodeInformation episode, IProgress<double>? progress)
     {
-        if (!IsDriverInitialized)
+        Dictionary<string, string> data = new()
         {
-            await InitializeWebDriver();
+            ["preWatch"] = true.ToString(),
+            ["SID"] = episode.Series.SeriesCode.ToString(),
+            ["season"] = episode.Season.SeasonNumber.ToString(),
+            ["ep"] = episode.EpisodeNumber.ToString()
+        };
+
+        var res = await _httpClient.PostAsync(Constants.SdarotUrls.AjaxWatchUrl, new FormUrlEncodedContent(data));
+        var token = await res.Content.ReadAsStringAsync();
+
+        for (var i = 0.1; i <= 30; i += 0.1)
+        {
+            await Task.Delay(100);
+            progress?.Report(i);
         }
 
-        await NavigateToEpisodeAsync(episode);
-
-        // Wait for button to show up
-        var currSeconds = (float)Constants.WaitTime;
-        while (currSeconds > 0)
+        data = new()
         {
-            var secondsLeft = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageEpisodeWaitTime));
-            if (secondsLeft is null)
-            {
-                throw new ObjectDisposedException(nameof(_webDriver));
-            }
+            ["watch"] = false.ToString(),
+            ["token"] = token,
+            ["serie"] = episode.Series.SeriesCode.ToString(),
+            ["season"] = episode.Season.SeasonNumber.ToString(),
+            ["episode"] = episode.EpisodeNumber.ToString(),
+            ["type"] = "episode"
+        };
 
-            var newSeconds = float.Parse(secondsLeft.Text);
-            if (newSeconds < currSeconds)
-            {
-                currSeconds = newSeconds;
-                progress?.Report(30 - currSeconds);
-            }
+        res = await _httpClient.PostAsync(Constants.SdarotUrls.AjaxWatchUrl, new FormUrlEncodedContent(data));
+
+        var watchResult = await res.Content.ReadFromJsonAsync<WatchResult>();
+
+        if (watchResult is null)
+        {
+            throw new WebsiteErrorException("Unable to retrieve episode media url.");
         }
 
-        try
-        {
-            // Click button
-            var proceedButton = await FindClickableElementAsync(By.Id(Constants.IdSelectors.ProceedButtonId));
-            if (proceedButton is null)
-            {
-                throw new ElementNotFoundException(nameof(proceedButton));
-            }
+        var bestResolution = watchResult.Watch.Max((res) => res.Key);
 
-            proceedButton.Click();
-        }
-        catch
-        {
-            var errorMessage = await FindElementAsync(By.XPath(Constants.XPathSelectors.SeriesPageErrorMessage));
-            if (errorMessage is null)
-            {
-                throw new ElementNotFoundException(nameof(errorMessage));
-            }
-
-            if (errorMessage.Text == Constants.Error2Message)
-            {
-                throw new Error2Exception();
-            }
-
-            throw new WebsiteErrorException();
-        }
-
-        var episodeMedia = await FindElementAsync(By.Id(Constants.IdSelectors.EpisodeMedia));
-        if (episodeMedia is null)
-        {
-            throw new ElementNotFoundException(nameof(episodeMedia));
-        }
-
-        var mediaUrl = episodeMedia.GetAttribute("src");
-        var cookies = RetrieveCookies();
-
-        return new EpisodeMediaDetails(mediaUrl, cookies, episode);
+        return watchResult.Watch[bestResolution];
     }
+
+    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream) => await DownloadEpisode(episodeMediaUrl, stream, null);
+    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress) => await DownloadEpisode(episodeMediaUrl, stream, progress, default);
+
+    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress, CancellationToken ct) => await _httpClient.DownloadAsync(episodeMediaUrl, stream, progress, ct);
 }

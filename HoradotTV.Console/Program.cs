@@ -9,18 +9,12 @@ internal static class Program
         IOHelpers.Print($"Welcome to HoradotTV {Constants.SOFTWARE_VERSION}!");
         IOHelpers.Print("Initializing...");
 
-        ExitHelper.Initialize(Shutdown);
         System.Console.InputEncoding = Encoding.Unicode;
         System.Console.OutputEncoding = Encoding.Unicode;
 
         try
         {
             driver = new SdarotDriver();
-        }
-        catch (ChromeIsNotInstalledException)
-        {
-            IOHelpers.Print($"\nChrome is not installed. Please follow this guide to install it:\n{Constants.ChromeDownloadProblemGuide}");
-            Environment.Exit(0);
         }
         catch (SdarotBlockedException)
         {
@@ -208,13 +202,6 @@ internal static class Program
     {
         try
         {
-            if (rootRun)
-            {
-                IOHelpers.Print("\nInitializing web driver...");
-                await driver.InitializeWebDriver();
-                IOHelpers.Print("Done.");
-            }
-
             await LoginToWebsite(driver);
 
             var failedEpisodes = new List<EpisodeInformation>();
@@ -251,8 +238,8 @@ internal static class Program
                 }
 
                 IOHelpers.Log($"Loading {episode.Season.SeasonString} {episode.EpisodeString}...");
-                var episodeMedia = await GetEpisodeMediaDetails(driver, episode);
-                if (episodeMedia is null)
+                var episodeMediaUrl = await GetEpisodeMediaUrl(driver, episode);
+                if (episodeMediaUrl is null)
                 {
                     failedEpisodes.Add(episode);
                     IOHelpers.Log("Failed. Proceeding to next episode.");
@@ -261,7 +248,8 @@ internal static class Program
 
                 IOHelpers.Log($"Downloading {episode.Season.SeasonString} {episode.EpisodeString}...");
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
-                await SdarotHelper.DownloadEpisode(episodeMedia, finalLocation);
+                using var file = new FileStream(finalLocation, FileMode.Create, FileAccess.Write, FileShare.None);
+                await driver.DownloadEpisode($"https:{episodeMediaUrl}", file);
                 IOHelpers.Log("Download completed.");
             }
 
@@ -280,10 +268,6 @@ internal static class Program
             return failedEpisodes;
         }
         catch { /* Every exception thrown */ }
-        finally
-        {
-            driver.ShutdownWebDriver();
-        }
 
         return null;
     }
@@ -352,13 +336,13 @@ internal static class Program
         }
     }
 
-    private static async Task<EpisodeMediaDetails?> GetEpisodeMediaDetails(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
+    private static async Task<string?> GetEpisodeMediaUrl(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
     {
         do
         {
             try
             {
-                return await driver.GetEpisodeMediaDetailsAsync(episode);
+                return await driver.GetEpisodeMediaUrlAsync(episode);
             }
             catch (Error2Exception)
             {
@@ -378,11 +362,5 @@ internal static class Program
         } while (retries > -1);
 
         return null;
-    }
-
-    private static void Shutdown()
-    {
-        driver?.ShutdownWebDriver();
-        Environment.Exit(0);
     }
 }
