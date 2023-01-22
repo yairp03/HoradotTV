@@ -4,7 +4,6 @@ global using SdarotAPI.Exceptions.WebsiteErrors;
 global using SdarotAPI.Models;
 global using Syroot.Windows.IO;
 global using System.Reflection;
-global using System.Runtime.InteropServices;
 global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;

@@ -57,7 +57,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(true);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", 1);
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
 
         Stopwatch sw = new();
         sw.Start();
@@ -75,7 +75,7 @@ public class ApiUnitTest
         await Task.Delay(500);
         SdarotDriver driver = new(true);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", 1);
+        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
         SeasonInformation season = new(4, 3, "4", series);
 
         Stopwatch sw = new();
