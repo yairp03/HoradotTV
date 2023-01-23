@@ -5,8 +5,11 @@ public partial class SeriesInformation
     public string SeriesNameHe { get; set; }
     public string SeriesNameEn { get; set; }
     public int SeriesCode { get; set; }
+
+    [JsonIgnore]
     public string ImageUrl => $"{Constants.SdarotUrls.ImageUrl}{SeriesCode}.jpg";
 
+    [JsonIgnore]
     public string SeriesUrl => $"{Constants.SdarotUrls.WatchUrl}{SeriesCode}";
 
     public SeriesInformation(string seriesNameHe, string seriesNameEn, string imageUrl)

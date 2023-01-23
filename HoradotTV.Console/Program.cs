@@ -69,7 +69,7 @@ internal static class Program
                 continue;
             }
 
-            var episodesAmount = GetEpisodesAmount();
+            var episodesAmount = IOHelpers.InputPositiveInt("\nEnter episodes amount (0 - cancel): ");
             if (episodesAmount == 0)
             {
                 continue;
@@ -181,18 +181,6 @@ internal static class Program
         return episode;
     }
 
-    private static int GetEpisodesAmount()
-    {
-        var amount = IOHelpers.InputInt("\nEnter episodes amount (0 - cancel): ");
-        while (amount < 0)
-        {
-            IOHelpers.Print("Please enter a positive amount.");
-            amount = IOHelpers.InputInt("Enter episodes amount: ");
-        }
-
-        return amount;
-    }
-
     private static async Task DownloadSeries(SdarotDriver driver, SeriesInformation series, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(series), downloadLocation);
     private static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
     private static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new[] { episode }, downloadLocation);
@@ -252,12 +240,25 @@ internal static class Program
                 await driver.DownloadEpisode($"https:{episodeMediaUrl}", file);
                 IOHelpers.Log("Download completed.");
             }
+            IOHelpers.Log("Finished.");
 
             if (rootRun)
             {
-                if (failedEpisodes.Count > 0)
+                var tryAgainAmount = 1;
+                while (failedEpisodes.Count > 0)
                 {
-                    IOHelpers.Print($"\nFinished. Trying again {failedEpisodes.Count} failed episodes");
+                    if (tryAgainAmount == 0)
+                    {
+                        tryAgainAmount += HandleFailedEpisodes(failedEpisodes, downloadLocation);
+
+                        if (tryAgainAmount == 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    tryAgainAmount--;
+                    IOHelpers.Print($"\nTrying again {failedEpisodes.Count} failed episodes");
                     failedEpisodes = (await DownloadEpisodes(driver, failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
                 }
 
@@ -270,6 +271,31 @@ internal static class Program
         catch { /* Every exception thrown */ }
 
         return null;
+    }
+
+    private static int HandleFailedEpisodes(List<EpisodeInformation> episodes, string downloadLocation)
+    {
+        IOHelpers.Print("\nThere are still some failed episodes.\nWhat do you want to do with them?");
+        IOHelpers.Print(Menus.FAILED_MENU);
+        var option = (FailedOptions)IOHelpers.ChooseOptionRange(Enum.GetNames(typeof(FailedOptions)).Length - 1, "Choose an option");
+
+        if (option == FailedOptions.None)
+        {
+            return 0;
+        }
+
+        if (option == FailedOptions.TryAgain)
+        {
+            return IOHelpers.InputPositiveInt("\nEnter retries amount (0 - cancel): ");
+        }
+
+        if (option == FailedOptions.Export)
+        {
+            var finalLocation = Path.Combine(downloadLocation, $"FailedEpisodes_{DateTime.Now:HH_mm_ss_dd_MM_yyyy}.epis");
+            File.WriteAllText(finalLocation, JsonSerializer.Serialize(episodes, options: new JsonSerializerOptions { WriteIndented = true }));
+        }
+
+        return 0;
     }
 
     private static string GetFullDownloadLocation(string downloadLocation, EpisodeInformation episode)
