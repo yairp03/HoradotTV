@@ -33,6 +33,17 @@ internal static class IOHelpers
             }
         }
     }
+    public static int InputPositiveInt(string s = "")
+    {
+        var amount = InputInt(s);
+        while (amount < 0)
+        {
+            Print("Please enter a positive amount.");
+            amount = InputInt(s);
+        }
+
+        return amount;
+    }
 
     public static string ChooseOption(IEnumerable<string> options, string type = "option", string title = "Choose an option")
     {

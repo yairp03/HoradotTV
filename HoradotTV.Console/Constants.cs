@@ -20,6 +20,10 @@ internal static class Menus
                                       "[2] Download Episodes\n" +
                                       "[3] Download Season\n" +
                                       "[4] Download Series";
+
+    public const string FAILED_MENU = "[0] Nothing\n" +
+                                      "[1] Try again\n" +
+                                      "[2] Export to file";
 }
 
 internal enum Modes
@@ -29,4 +33,11 @@ internal enum Modes
     Episodes,
     Season,
     Series
+}
+
+internal enum FailedOptions
+{
+    None,
+    TryAgain,
+    Export
 }
