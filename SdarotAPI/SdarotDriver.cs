@@ -1,4 +1,8 @@
-﻿namespace SdarotAPI;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
+
+namespace SdarotAPI;
 
 public class SdarotDriver
 {
@@ -14,9 +18,18 @@ public class SdarotDriver
 
     public SdarotDriver(bool ignoreChecks)
     {
+        HttpClientHandler handler = new HttpClientHandler()
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        };
+
+        _httpClient = new HttpClient(handler);
+
         Constants.SdarotUrls.BaseDomain = RetrieveSdarotDomain().Result;
         _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
         _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
+        _httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+
 
         if (!ignoreChecks)
         {
@@ -58,48 +71,35 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
-        var searchHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.SearchUrl}{searchQuery}");
-        var doc = new HtmlDocument();
-        doc.LoadHtml(searchHtml);
+        var showsJson = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AllShowsUrl}");
+        var shows = JsonSerializer.Deserialize<List<SeriesInformation>>(showsJson);
 
-        var seriesNameElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesName);
+        var relevantShows = shows?.Where(x =>
+            x.SeriesNameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
+            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)).ToList();
+
+        //var doc = new HtmlDocument();
+        //doc.LoadHtml(searchHtml);
+
+        //var seriesNameElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesName);
 
         // In case there is only one result
-        if (seriesNameElement is not null)
+        if (relevantShows.Count() == 1)
         {
-            var seriesName = seriesNameElement.InnerText.Trim(new[] { ' ', '/' });
+            var currShow = relevantShows.First();
+            var seriesName = $"{currShow.SeriesNameEn} / {currShow.SeriesNameHe}";
 
-            var imageUrlElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesImage);
-            if (imageUrlElement is null)
-            {
-                throw new ElementNotFoundException(nameof(imageUrlElement));
-            }
-
-            var imageUrl = imageUrlElement.GetAttributeValue("src", "");
-
-            return new SeriesInformation(HttpUtility.HtmlDecode(seriesName), imageUrl).Yield();
+            return new SeriesInformation(HttpUtility.HtmlDecode(seriesName), currShow.ImageUrl).Yield();
         }
 
-        var seriesElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SearchPageResult);
-
         // In case there are no results
-        if (seriesElements is null || seriesElements.Count == 0)
+        if (!relevantShows.Any())
         {
             return Enumerable.Empty<SeriesInformation>();
         }
 
         // In case there are more than one result
-
-        var seriesList = new List<SeriesInformation>();
-        foreach (var seriesElement in seriesElements)
-        {
-            var seriesNameHe = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameHe).InnerText;
-            var seriesNameEn = seriesElement.SelectSingleNode(Constants.XPathSelectors.SearchPageResultInnerSeriesNameEn).InnerText;
-            var imageUrl = seriesElement.SelectSingleNode("img").GetAttributeValue("src", "");
-            seriesList.Add(new(HttpUtility.HtmlDecode(seriesNameHe), HttpUtility.HtmlDecode(seriesNameEn), imageUrl));
-        }
-
-        return seriesList;
+        return relevantShows;
     }
 
     public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)

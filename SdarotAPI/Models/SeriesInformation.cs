@@ -1,16 +1,37 @@
+using System.ComponentModel;
+
 namespace SdarotAPI.Models;
 
 public partial class SeriesInformation
 {
+    [JsonPropertyName("heb")]
     public string SeriesNameHe { get; set; }
+    [JsonPropertyName("eng")]
     public string SeriesNameEn { get; set; }
-    public int SeriesCode { get; set; }
+    [JsonPropertyName("id")]
+    public string SeriesId { get; set; }
+
+    public int SeriesCode
+    {
+        get
+        {
+            return int.Parse(SeriesId);
+        }
+        set
+        {
+            SeriesId = value.ToString();
+        }
+    }
 
     [JsonIgnore]
     public string ImageUrl => $"{Constants.SdarotUrls.ImageUrl}{SeriesCode}.jpg";
 
     [JsonIgnore]
     public string SeriesUrl => $"{Constants.SdarotUrls.WatchUrl}{SeriesCode}";
+
+    public SeriesInformation()
+    {
+    }
 
     public SeriesInformation(string seriesNameHe, string seriesNameEn, string imageUrl)
     {
