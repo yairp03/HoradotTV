@@ -18,7 +18,7 @@ public class SdarotDriver
 
     public SdarotDriver(bool ignoreChecks)
     {
-        HttpClientHandler handler = new HttpClientHandler()
+        HttpClientHandler handler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
@@ -78,10 +78,8 @@ public class SdarotDriver
             x.SeriesNameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
             x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)).ToList();
 
-        //var doc = new HtmlDocument();
-        //doc.LoadHtml(searchHtml);
-
-        //var seriesNameElement = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.SeriesPageSeriesName);
+        // If none, turn to empty array.
+        relevantShows ??= new List<SeriesInformation>();
 
         // In case there is only one result
         if (relevantShows.Count() == 1)
