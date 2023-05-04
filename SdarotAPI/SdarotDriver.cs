@@ -14,7 +14,7 @@ public class SdarotDriver
 
     public SdarotDriver(bool ignoreChecks)
     {
-        HttpClientHandler handler = new HttpClientHandler
+        var handler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
@@ -25,7 +25,6 @@ public class SdarotDriver
         _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
         _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
         _httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
-
 
         if (!ignoreChecks)
         {
@@ -67,7 +66,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
     {
-        var showsJson = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AllShowsUrl}");
+        var showsJson = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxAllShowsUrl}");
         var shows = JsonSerializer.Deserialize<List<SeriesInformation>>(showsJson);
 
         var relevantShows = shows?.Where(x =>
@@ -197,13 +196,7 @@ public class SdarotDriver
 
         res = await _httpClient.PostAsync(Constants.SdarotUrls.AjaxWatchUrl, new FormUrlEncodedContent(data));
 
-        var watchResult = await res.Content.ReadFromJsonAsync<WatchResult>();
-
-        if (watchResult is null)
-        {
-            throw new WebsiteErrorException("Unable to retrieve episode media url.");
-        }
-
+        var watchResult = await res.Content.ReadFromJsonAsync<WatchResult>() ?? throw new WebsiteErrorException("Unable to retrieve episode media url.");
         var bestResolution = watchResult.Watch.Max((res) => res.Key);
 
         return watchResult.Watch[bestResolution];

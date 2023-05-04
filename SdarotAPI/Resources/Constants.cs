@@ -14,7 +14,7 @@ internal static class Constants
         public static string ImageUrl => $"https://static.{BaseDomain}/series/";
         public static string TestUrl => $"{WatchUrl}1";
         public static string AjaxWatchUrl => $"{HomeUrl}ajax/watch";
-        public static string AllShowsUrl => $"{HomeUrl}ajax/index?srl=1";
+        public static string AjaxAllShowsUrl => $"{HomeUrl}ajax/index?srl=1";
     }
 
     public static class XPathSelectors
