@@ -2,14 +2,14 @@ namespace SdarotAPI.Models;
 
 public partial class SeriesInformation
 {
-    [JsonPropertyName("heb")] public string SeriesNameHe { get; set; } = null;
-    [JsonPropertyName("eng")] public string SeriesNameEn { get; set; } = null;
+    [JsonPropertyName("heb")] public string SeriesNameHe { get; set; } = String.Empty;
+    [JsonPropertyName("eng")] public string SeriesNameEn { get; set; } = String.Empty;
     [JsonPropertyName("id")]
     public string SeriesId
     {
         get
         {
-            return SeriesId.ToString();
+            return SeriesCode.ToString();
         }
         set
         {

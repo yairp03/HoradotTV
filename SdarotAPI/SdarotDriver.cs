@@ -72,7 +72,7 @@ public class SdarotDriver
 
         var relevantShows = shows?.Where(x =>
             x.SeriesNameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
-            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)).ToList() ?? Enumerable.Empty<SeriesInformation>();
+            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)) ?? Enumerable.Empty<SeriesInformation>();
 
         // In case there are more than one result
         return relevantShows;
