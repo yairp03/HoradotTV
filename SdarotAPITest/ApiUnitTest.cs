@@ -24,7 +24,7 @@ public class ApiUnitTest
 
         Assert.AreEqual(0, (await driver.SearchSeries("dsakdjaslkfjsalkjfas")).Count());
         Assert.AreEqual(15, (await driver.SearchSeries("שמש")).Count());
-        Assert.AreEqual(75, (await driver.SearchSeries("ana")).Count());
+        Assert.AreEqual(77, (await driver.SearchSeries("ana")).Count());
         Assert.AreEqual(1, (await driver.SearchSeries("shemesh")).Count());
     }
 
