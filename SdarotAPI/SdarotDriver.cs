@@ -2,7 +2,7 @@
 
 public class SdarotDriver
 {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient;
 
     public SdarotDriver() : this(false) { }
 
