@@ -240,6 +240,7 @@ internal static class Program
                 await driver.DownloadEpisode($"https:{episodeMediaUrl}", file);
                 IOHelpers.Log("Download completed.");
             }
+
             IOHelpers.Log("Finished.");
 
             if (rootRun)
