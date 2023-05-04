@@ -1,6 +1,4 @@
-﻿using static System.Net.WebRequestMethods;
-
-namespace SdarotAPI.Resources;
+﻿namespace SdarotAPI.Resources;
 
 internal static class Constants
 {

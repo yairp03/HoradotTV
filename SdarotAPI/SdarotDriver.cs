@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Text.Json;
-
-namespace SdarotAPI;
+﻿namespace SdarotAPI;
 
 public class SdarotDriver
 {
@@ -76,25 +72,7 @@ public class SdarotDriver
 
         var relevantShows = shows?.Where(x =>
             x.SeriesNameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
-            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)).ToList();
-
-        // If none, turn to empty array.
-        relevantShows ??= new List<SeriesInformation>();
-
-        // In case there is only one result
-        if (relevantShows.Count() == 1)
-        {
-            var currShow = relevantShows.First();
-            var seriesName = $"{currShow.SeriesNameEn} / {currShow.SeriesNameHe}";
-
-            return new SeriesInformation(HttpUtility.HtmlDecode(seriesName), currShow.ImageUrl).Yield();
-        }
-
-        // In case there are no results
-        if (!relevantShows.Any())
-        {
-            return Enumerable.Empty<SeriesInformation>();
-        }
+            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)).ToList() ?? Enumerable.Empty<SeriesInformation>();
 
         // In case there are more than one result
         return relevantShows;

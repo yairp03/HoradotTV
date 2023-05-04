@@ -1,27 +1,23 @@
-using System.ComponentModel;
-
 namespace SdarotAPI.Models;
 
 public partial class SeriesInformation
 {
-    [JsonPropertyName("heb")]
-    public string SeriesNameHe { get; set; }
-    [JsonPropertyName("eng")]
-    public string SeriesNameEn { get; set; }
+    [JsonPropertyName("heb")] public string SeriesNameHe { get; set; } = null;
+    [JsonPropertyName("eng")] public string SeriesNameEn { get; set; } = null;
     [JsonPropertyName("id")]
-    public string SeriesId { get; set; }
-
-    public int SeriesCode
+    public string SeriesId
     {
         get
         {
-            return int.Parse(SeriesId);
+            return SeriesId.ToString();
         }
         set
         {
-            SeriesId = value.ToString();
+            SeriesCode = int.Parse(value);
         }
     }
+
+    public int SeriesCode { get; set; }
 
     [JsonIgnore]
     public string ImageUrl => $"{Constants.SdarotUrls.ImageUrl}{SeriesCode}.jpg";
