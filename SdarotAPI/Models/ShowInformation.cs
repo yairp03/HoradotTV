@@ -9,7 +9,7 @@ public class ShowInformation
     [JsonIgnore]
     public int Code { get; set; }
 
-    private string? posterName = null;
+    private string? posterName;
     [JsonPropertyName("poster")]
     public string? PosterName
     {
@@ -34,7 +34,9 @@ public class ShowInformation
     {
     }
 
-    public ShowInformation(string fullName, int code, string? posterName = null)
+    public ShowInformation(string fullName, int code) : this(fullName, code, null) { }
+
+    public ShowInformation(string fullName, int code, string? posterName)
     {
         var names = fullName.Split('/');
         NameHe = names[0].Trim();
@@ -43,7 +45,9 @@ public class ShowInformation
         PosterName = posterName;
     }
 
-    public ShowInformation(string nameHe, string nameEn, int code, string? posterName = null)
+    public ShowInformation(string nameHe, string nameEn, int code) : this(nameHe, nameEn, code, null) { }
+
+    public ShowInformation(string nameHe, string nameEn, int code, string? posterName)
     {
         NameHe = nameHe;
         NameEn = nameEn;

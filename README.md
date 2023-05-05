@@ -29,8 +29,8 @@ The easiest way to use the console app is through the release on GitHub:
 1. Go to the [releases](https://github.com/yairp03/HoradotTV/releases) page.
 
 2. Download the latest `zip` file:
-    - If you have `.NET` installed, you can download the `HoradotTV.Console.zip`.
-    - If you don't know what `.NET` is, download the `HoradotTV.Console.WithRuntime.zip`.
+   - If you have `.NET` installed, you can download the `HoradotTV.Console.zip`.
+   - If you don't know what `.NET` is, download the `HoradotTV.Console.WithRuntime.zip`.
 
 3. Extract the zip.
 
@@ -54,7 +54,7 @@ Contributors who are willing to help use the SdarotAPI library to build the GUI 
 - Release updater.
 - Support for SratimTV.
 - GUI app.
-- SdarotAPI in python. (In the meanwhile, check out [Xiddoc's project](https://github.com/Xiddoc/PySdarot))
+- SdarotAPI in Python. (In the meanwhile, check out [Xiddoc's project](https://github.com/Xiddoc/PySdarot))
 
 ## Contributing
 

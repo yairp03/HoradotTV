@@ -4,9 +4,11 @@ public class SdarotDriver
 {
     private readonly HttpClient _httpClient;
 
+    public SdarotDriver() : this(true) { }
+
     public SdarotDriver(bool doChecks = true)
     {
-        _httpClient = new(new HttpClientHandler()
+        _httpClient = new(new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         });
@@ -203,5 +205,7 @@ public class SdarotDriver
         return watchResult.Watch[bestResolution];
     }
 
-    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress = null, CancellationToken ct = default) => await _httpClient.DownloadAsync(episodeMediaUrl, stream, progress, ct);
+    public async Task DownloadEpisodeAsync(string episodeMediaUrl, Stream stream) => await DownloadEpisodeAsync(episodeMediaUrl, stream, null);
+    public async Task DownloadEpisodeAsync(string episodeMediaUrl, Stream stream, IProgress<long>? progress) => await DownloadEpisodeAsync(episodeMediaUrl, stream, progress, default);
+    public async Task DownloadEpisodeAsync(string episodeMediaUrl, Stream stream, IProgress<long>? progress, CancellationToken ct) => await _httpClient.DownloadAsync(episodeMediaUrl, stream, progress, ct);
 }

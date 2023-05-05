@@ -244,7 +244,7 @@ internal static class Program
                 IOHelper.Log($"Downloading {episode.Season} {episode}...");
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 using var file = new FileStream(finalLocation, FileMode.Create, FileAccess.Write, FileShare.None);
-                await driver.DownloadEpisode($"https:{episodeMediaUrl}", file);
+                await driver.DownloadEpisodeAsync($"https:{episodeMediaUrl}", file);
                 IOHelper.Log("Download completed.");
             }
 
