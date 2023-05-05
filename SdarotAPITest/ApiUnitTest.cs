@@ -4,13 +4,12 @@
 public class ApiUnitTest
 {
     [TestMethod]
-    public async Task DriverInitTest()
+    public void DriverInitTest()
     {
-        await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
 
-        _ = new SdarotDriver(true);
+        _ = new SdarotDriver(false);
 
         sw.Stop();
 
@@ -20,18 +19,18 @@ public class ApiUnitTest
     [TestMethod]
     public async Task SearchTest()
     {
-        SdarotDriver driver = new(true);
+        SdarotDriver driver = new(false);
 
-        Assert.AreEqual(0, (await driver.SearchSeries("dsakdjaslkfjsalkjfas")).Count());
-        Assert.IsTrue((await driver.SearchSeries("שמש")).Count() > 0);
-        Assert.IsTrue((await driver.SearchSeries("ana")).Count() > 0);
-        Assert.AreEqual(1, (await driver.SearchSeries("shemesh")).Count());
+        Assert.AreEqual(0, (await driver.SearchShow("dsakdjaslkfjsalkjfas")).Count());
+        Assert.IsTrue((await driver.SearchShow("שמש")).Any());
+        Assert.IsTrue((await driver.SearchShow("ana")).Any());
+        Assert.AreEqual(1, (await driver.SearchShow("shemesh")).Count());
     }
 
     [TestMethod]
     public async Task SearchTestBenchmark()
     {
-        SdarotDriver driver = new(true);
+        SdarotDriver driver = new(false);
 
         Trace.WriteLine($"No results: {(await MeasureSearch(driver, "dsakdjaslkfjsalkjfas")).TotalSeconds} seconds.");
         Trace.WriteLine($"Few results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
@@ -41,11 +40,10 @@ public class ApiUnitTest
 
     public static async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
     {
-        await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
 
-        _ = await driver.SearchSeries(query);
+        _ = await driver.SearchShow(query);
 
         sw.Stop();
         return sw.Elapsed;
@@ -54,15 +52,14 @@ public class ApiUnitTest
     [TestMethod]
     public async Task SeasonsTest()
     {
-        await Task.Delay(500);
-        SdarotDriver driver = new(true);
+        SdarotDriver driver = new(false);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
+        ShowInformation show = new("איש משפחה", "Family Guy", 1);
 
         Stopwatch sw = new();
         sw.Start();
 
-        _ = await driver.GetSeasonsAsync(series);
+        _ = await driver.GetSeasonsAsync(show);
 
         sw.Stop();
 
@@ -72,11 +69,10 @@ public class ApiUnitTest
     [TestMethod]
     public async Task EpisodesTest()
     {
-        await Task.Delay(500);
-        SdarotDriver driver = new(true);
+        SdarotDriver driver = new(false);
 
-        SeriesInformation series = new("איש משפחה / Family Guy", "static.sdarot.tw/series/1.jpg");
-        SeasonInformation season = new(4, 3, "4", series);
+        ShowInformation show = new("איש משפחה", "Family Guy", 1);
+        SeasonInformation season = new(4, 3, "4", show);
 
         Stopwatch sw = new();
         sw.Start();

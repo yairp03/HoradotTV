@@ -2,22 +2,21 @@
 
 public class SeasonInformation
 {
-    public int SeasonNumber { get; set; }
-    public int SeasonIndex { get; set; }
-    public string SeasonName { get; set; }
-    public SeriesInformation Series { get; set; }
+    public string Name { get; set; }
+    public int Number { get; set; }
+    public int Index { get; set; }
+    public ShowInformation Show { get; set; }
 
     [JsonIgnore]
-    public string SeasonString => $"Season {SeasonNumber:D2}";
+    public string Url => $"{Show.Url}/season/{Number}";
 
-    [JsonIgnore]
-    public string SeasonUrl => $"{Series.SeriesUrl}/season/{SeasonNumber}";
-
-    public SeasonInformation(int seasonNumber, int seasonIndex, string seasonName, SeriesInformation series)
+    public SeasonInformation(int seasonNumber, int seasonIndex, string seasonName, ShowInformation show)
     {
-        SeasonNumber = seasonNumber;
-        SeasonIndex = seasonIndex;
-        SeasonName = seasonName;
-        Series = series;
+        Number = seasonNumber;
+        Index = seasonIndex;
+        Name = seasonName;
+        Show = show;
     }
+
+    public override string ToString() => $"Season {Number:D2}";
 }

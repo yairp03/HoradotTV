@@ -1,6 +1,6 @@
 ﻿namespace HoradotTV.Console;
 
-internal static class IOHelpers
+internal static class IOHelper
 {
     public static void Print(string s) => System.Console.WriteLine(s);
     public static void Log(string s) => Print($"[{DateTime.Now:HH:mm:ss}] {s}");
@@ -48,11 +48,12 @@ internal static class IOHelpers
     public static string ChooseOption(IEnumerable<string> options, string type = "option", string title = "Choose an option")
     {
         string option;
+        var optionsList = options.ToList();
         do
         {
-            Print($"\nAvailable {type}s: " + string.Join(", ", options));
-            option = Input($"{title} (c - cancel): ");
-            if (option == "c" || options.Contains(option))
+            Print($"\nAvailable {type}s: " + string.Join(", ", optionsList));
+            option = Input($"{title} ({Constants.Commands.Cancel} - cancel): ");
+            if (option == Constants.Commands.Cancel || optionsList.Contains(option))
             {
                 return option;
             }
