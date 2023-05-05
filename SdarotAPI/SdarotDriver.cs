@@ -6,7 +6,7 @@ public class SdarotDriver
 
     public SdarotDriver() : this(true) { }
 
-    public SdarotDriver(bool doChecks = true)
+    public SdarotDriver(bool doChecks)
     {
         _httpClient = new(new HttpClientHandler
         {
