@@ -4,9 +4,8 @@
 public class ApiUnitTest
 {
     [TestMethod]
-    public async Task DriverInitTest()
+    public void DriverInitTest()
     {
-        await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
 
@@ -41,7 +40,6 @@ public class ApiUnitTest
 
     public static async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
     {
-        await Task.Delay(500);
         Stopwatch sw = new();
         sw.Start();
 
@@ -54,7 +52,6 @@ public class ApiUnitTest
     [TestMethod]
     public async Task SeasonsTest()
     {
-        await Task.Delay(500);
         SdarotDriver driver = new(false);
 
         ShowInformation show = new("איש משפחה", "Family Guy", 1);
@@ -72,7 +69,6 @@ public class ApiUnitTest
     [TestMethod]
     public async Task EpisodesTest()
     {
-        await Task.Delay(500);
         SdarotDriver driver = new(false);
 
         ShowInformation show = new("איש משפחה", "Family Guy", 1);
