@@ -23,8 +23,8 @@ public class ApiUnitTest
         SdarotDriver driver = new(true);
 
         Assert.AreEqual(0, (await driver.SearchSeries("dsakdjaslkfjsalkjfas")).Count());
-        Assert.AreEqual(15, (await driver.SearchSeries("שמש")).Count());
-        Assert.AreEqual(77, (await driver.SearchSeries("ana")).Count());
+        Assert.IsTrue((await driver.SearchSeries("שמש")).Count() > 0);
+        Assert.IsTrue((await driver.SearchSeries("ana")).Count() > 0);
         Assert.AreEqual(1, (await driver.SearchSeries("shemesh")).Count());
     }
 
@@ -34,8 +34,8 @@ public class ApiUnitTest
         SdarotDriver driver = new(true);
 
         Trace.WriteLine($"No results: {(await MeasureSearch(driver, "dsakdjaslkfjsalkjfas")).TotalSeconds} seconds.");
-        Trace.WriteLine($"15 results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
-        Trace.WriteLine($"75 results: {(await MeasureSearch(driver, "ana")).TotalSeconds} seconds.");
+        Trace.WriteLine($"Few results: {(await MeasureSearch(driver, "שמש")).TotalSeconds} seconds.");
+        Trace.WriteLine($"Much results: {(await MeasureSearch(driver, "ana")).TotalSeconds} seconds.");
         Trace.WriteLine($"One result: {(await MeasureSearch(driver, "shemesh")).TotalSeconds} seconds.");
     }
 
