@@ -4,39 +4,41 @@ public class SdarotDriver
 {
     private readonly HttpClient _httpClient;
 
-    public SdarotDriver() : this(false) { }
+    public SdarotDriver(bool doChecks = true)
+    {
+        _httpClient = new(new HttpClientHandler()
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        });
+
+        Constants.SdarotUrls.BaseDomain = RetrieveSdarotDomain().Result;
+        _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
+
+        if (doChecks && !TestConnection().Result)
+        {
+            throw new SdarotBlockedException();
+        }
+    }
+
+    private async Task<bool> TestConnection()
+    {
+        try
+        {
+            _ = await _httpClient.GetAsync(Constants.SdarotUrls.TestUrl);
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     public static async Task<string> RetrieveSdarotDomain()
     {
         using HttpClient client = new();
         return (await client.GetStringAsync(Constants.SdarotUrls.SdarotUrlSource)).Trim();
-    }
-
-    public SdarotDriver(bool ignoreChecks)
-    {
-        var handler = new HttpClientHandler
-        {
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-        };
-
-        _httpClient = new HttpClient(handler);
-
-        Constants.SdarotUrls.BaseDomain = RetrieveSdarotDomain().Result;
-        _httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.SdarotUrls.HomeUrl);
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
-        _httpClient.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
-
-        if (!ignoreChecks)
-        {
-            try
-            {
-                _httpClient.GetAsync(Constants.SdarotUrls.TestUrl).Wait();
-            }
-            catch
-            {
-                throw new SdarotBlockedException();
-            }
-        }
     }
 
     public async Task<bool> IsLoggedIn()
@@ -64,26 +66,25 @@ public class SdarotDriver
         return await IsLoggedIn();
     }
 
-    public async Task<IEnumerable<SeriesInformation>> SearchSeries(string searchQuery)
+    public async Task<IEnumerable<ShowInformation>> SearchShow(string searchQuery)
     {
         var showsJson = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxAllShowsUrl}");
-        var shows = JsonSerializer.Deserialize<List<SeriesInformation>>(showsJson);
+        var shows = JsonSerializer.Deserialize<List<ShowInformation>>(showsJson);
 
         var relevantShows = shows?.Where(x =>
-            x.SeriesNameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
-            x.SeriesNameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)) ?? Enumerable.Empty<SeriesInformation>();
+            x.NameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
+            x.NameEn.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase)) ?? Enumerable.Empty<ShowInformation>();
 
-        // In case there are more than one result
         return relevantShows;
     }
 
-    public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(SeriesInformation series)
+    public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
     {
-        var seriesHtml = await _httpClient.GetStringAsync(series.SeriesUrl);
+        var showHtml = await _httpClient.GetStringAsync(show.Url);
         var doc = new HtmlDocument();
-        doc.LoadHtml(seriesHtml);
+        doc.LoadHtml(showHtml);
 
-        var seasonElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.SeriesPageSeason);
+        var seasonElements = doc.DocumentNode.SelectNodes(Constants.XPathSelectors.ShowPageSeason);
 
         if (seasonElements is null || seasonElements.Count == 0)
         {
@@ -95,7 +96,7 @@ public class SdarotDriver
         {
             var seasonNumber = season.GetAttributeValue("data-season", 0);
             var seasonName = season.SelectSingleNode("a").InnerText;
-            seasons.Add(new(seasonNumber, i, seasonName, series));
+            seasons.Add(new(seasonNumber, i, seasonName, show));
         }
 
         return seasons;
@@ -103,7 +104,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
-        var episodesHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxWatchUrl}?episodeList={season.Series.SeriesCode}&season={season.SeasonNumber}");
+        var episodesHtml = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxWatchUrl}?episodeList={season.Show.Code}&season={season.Number}");
         var doc = new HtmlDocument();
         doc.LoadHtml(episodesHtml);
 
@@ -127,8 +128,8 @@ public class SdarotDriver
 
     public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
     {
-        var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.EpisodeIndex..]);
-        var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Series)).ToArray()[(firstEpisode.Season.SeasonIndex + 1)..]);
+        var episodesBuffer = new Queue<EpisodeInformation>((await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.Index..]);
+        var seasonBuffer = new Queue<SeasonInformation>((await GetSeasonsAsync(firstEpisode.Season.Show)).ToArray()[(firstEpisode.Season.Index + 1)..]);
 
         List<EpisodeInformation> episodes = new();
         while (episodes.Count < maxEpisodeAmount)
@@ -150,9 +151,9 @@ public class SdarotDriver
         return episodes;
     }
 
-    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeriesInformation series)
+    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(ShowInformation show)
     {
-        var seasons = await GetSeasonsAsync(series);
+        var seasons = await GetSeasonsAsync(show);
 
         List<EpisodeInformation> episodes = new();
         foreach (var season in seasons)
@@ -170,9 +171,9 @@ public class SdarotDriver
         Dictionary<string, string> data = new()
         {
             ["preWatch"] = true.ToString(),
-            ["SID"] = episode.Series.SeriesCode.ToString(),
-            ["season"] = episode.Season.SeasonNumber.ToString(),
-            ["ep"] = episode.EpisodeNumber.ToString()
+            ["SID"] = episode.Show.Code.ToString(),
+            ["season"] = episode.Season.Number.ToString(),
+            ["ep"] = episode.Number.ToString()
         };
 
         var res = await _httpClient.PostAsync(Constants.SdarotUrls.AjaxWatchUrl, new FormUrlEncodedContent(data));
@@ -188,9 +189,9 @@ public class SdarotDriver
         {
             ["watch"] = false.ToString(),
             ["token"] = token,
-            ["serie"] = episode.Series.SeriesCode.ToString(),
-            ["season"] = episode.Season.SeasonNumber.ToString(),
-            ["episode"] = episode.EpisodeNumber.ToString(),
+            ["serie"] = episode.Show.Code.ToString(),
+            ["season"] = episode.Season.Number.ToString(),
+            ["episode"] = episode.Number.ToString(),
             ["type"] = "episode"
         };
 
@@ -202,8 +203,5 @@ public class SdarotDriver
         return watchResult.Watch[bestResolution];
     }
 
-    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream) => await DownloadEpisode(episodeMediaUrl, stream, null);
-    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress) => await DownloadEpisode(episodeMediaUrl, stream, progress, default);
-
-    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress, CancellationToken ct) => await _httpClient.DownloadAsync(episodeMediaUrl, stream, progress, ct);
+    public async Task DownloadEpisode(string episodeMediaUrl, Stream stream, IProgress<long>? progress = null, CancellationToken ct = default) => await _httpClient.DownloadAsync(episodeMediaUrl, stream, progress, ct);
 }
