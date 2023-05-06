@@ -42,7 +42,11 @@ public class ShowInformation
         PosterName = posterName;
     }
 
-    public ShowInformation(string nameHe, string nameEn, int code, string? posterName = null)
+    public ShowInformation(string nameHe, string nameEn, int code) : this(nameHe, nameEn, code, null)
+    {
+    }
+
+    public ShowInformation(string nameHe, string nameEn, int code, string? posterName)
     {
         NameHe = nameHe;
         NameEn = nameEn;
