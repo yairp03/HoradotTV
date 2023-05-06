@@ -28,6 +28,8 @@ internal static class Program
                 case MainMenuOption.DownloadFromFile:
                     await DownloadFromFile();
                     break;
+                default:
+                    throw new InvalidOperationException($"Unexpected value option={option}");
             }
         } while (option != MainMenuOption.Quit);
     }
