@@ -2,7 +2,9 @@
 
 public class Media
 {
-    [JsonPropertyName("VID")] public string Id { get; set; } = string.Empty;
-    [JsonPropertyName("Watch")] public Dictionary<int, string> ResolutionsLinks { get; } = new();
-    [JsonIgnore] public string MaxResolutionLink => ResolutionsLinks[ResolutionsLinks.Max(resolution => resolution.Key)];
+    [JsonPropertyName("VID")] public string Id { get; init; } = string.Empty;
+    [JsonPropertyName("watch")] public Dictionary<int, string> ResolutionsLinks { get; init; } = new();
+
+    [JsonIgnore]
+    public string MaxResolutionLink => ResolutionsLinks[ResolutionsLinks.Max(resolution => resolution.Key)];
 }
