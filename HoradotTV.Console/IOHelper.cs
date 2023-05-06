@@ -4,12 +4,13 @@ internal static class IOHelper
 {
     public static void Print(string s) => System.Console.WriteLine(s);
     public static void Log(string s) => Print($"[{DateTime.Now:T}] {s}");
+
     public static string Input(string s = "")
     {
         System.Console.Write(s);
         try
         {
-            var result = System.Console.ReadLine();
+            string? result = System.Console.ReadLine();
             return result ?? throw new Exception();
         }
         catch
@@ -19,7 +20,8 @@ internal static class IOHelper
 
         return "";
     }
-    public static int InputInt(string s = "")
+
+    private static int InputInt(string s = "")
     {
         while (true)
         {
@@ -33,9 +35,10 @@ internal static class IOHelper
             }
         }
     }
+
     public static int InputPositiveInt(string s = "")
     {
-        var amount = InputInt(s);
+        int amount = InputInt(s);
         while (amount < 0)
         {
             Print("Please enter a positive amount.");
@@ -45,14 +48,14 @@ internal static class IOHelper
         return amount;
     }
 
-    public static string ChooseOption(IEnumerable<string> options, string type = "option", string title = "Choose an option")
+    public static string ChooseOption(IEnumerable<string> options, string type = "option",
+        string title = "Choose an option")
     {
-        string option;
         var optionsList = options.ToList();
         do
         {
             Print($"\nAvailable {type}s: " + string.Join(", ", optionsList));
-            option = Input($"{title} ({Constants.Commands.Cancel} - cancel): ");
+            string option = Input($"{title} ({Constants.Commands.Cancel} - cancel): ");
             if (option == Constants.Commands.Cancel || optionsList.Contains(option))
             {
                 return option;
@@ -61,19 +64,22 @@ internal static class IOHelper
             Print($"Please enter an valid {type}.");
         } while (true);
     }
+
     public static int ChooseOptionIndex(IEnumerable<string> options, string title = "Choose an option")
     {
         var optionsList = options.ToList();
         Print("[0] Back to start");
-        for (var i = 0; i < optionsList.Count; i++)
+        for (int i = 0; i < optionsList.Count; i++)
         {
             Print($"[{i + 1}] {optionsList[i]}");
         }
 
         return ChooseOptionRange(optionsList.Count, title);
     }
+
     public static int ChooseOptionRange(int max, string title = "Choose an option") => ChooseOptionRange(0, max, title);
-    public static int ChooseOptionRange(int min, int max, string title = "Choose an number")
+
+    private static int ChooseOptionRange(int min, int max, string title = "Choose an number")
     {
         int option;
         do

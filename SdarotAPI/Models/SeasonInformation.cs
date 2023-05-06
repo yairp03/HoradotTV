@@ -2,21 +2,16 @@
 
 public class SeasonInformation
 {
-    public string Name { get; set; } = string.Empty;
-    public int Number { get; set; }
-    public int Index { get; set; }
-    public ShowInformation Show { get; set; } = new();
+    public string Name { get; }
+    public int Number { get; }
+    public int Index { get; }
+    public ShowInformation Show { get; }
 
-    [JsonIgnore]
-    public string Url => $"{Show.Url}/season/{Number}";
-
-    public SeasonInformation() { }
-
-    public SeasonInformation(int seasonNumber, int seasonIndex, string seasonName, ShowInformation show)
+    public SeasonInformation(string name, int number, int index, ShowInformation show)
     {
-        Number = seasonNumber;
-        Index = seasonIndex;
-        Name = seasonName;
+        Name = name;
+        Number = number;
+        Index = index;
         Show = show;
     }
 

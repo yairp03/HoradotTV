@@ -2,14 +2,14 @@ namespace SdarotAPI.Models;
 
 public class ShowInformation
 {
-    [JsonPropertyName("heb")]
-    public string NameHe { get; set; } = string.Empty;
-    [JsonPropertyName("eng")]
-    public string NameEn { get; set; } = string.Empty;
-    [JsonIgnore]
-    public int Code { get; set; }
+    [JsonPropertyName("heb")] public string NameHe { get; init; } = string.Empty;
+
+    [JsonPropertyName("eng")] public string NameEn { get; init; } = string.Empty;
+
+    [JsonIgnore] public int Code { get; private set; }
 
     private string? posterName;
+
     [JsonPropertyName("poster")]
     public string? PosterName
     {
@@ -24,28 +24,27 @@ public class ShowInformation
         set => Code = int.Parse(value);
     }
 
-    [JsonIgnore]
-    public string PosterUrl => $"{Constants.SdarotUrls.ImageUrl}{PosterName}";
+    [JsonIgnore] public string PosterUrl => $"{Constants.SdarotUrls.ImageUrl}{PosterName}";
 
-    [JsonIgnore]
-    public string Url => $"{Constants.SdarotUrls.WatchUrl}{Code}";
+    [JsonIgnore] public string Url => $"{Constants.SdarotUrls.WatchUrl}{Code}";
 
+    [JsonConstructor]
     public ShowInformation()
     {
     }
 
-    public ShowInformation(string fullName, int code) : this(fullName, code, null) { }
-
     public ShowInformation(string fullName, int code, string? posterName)
     {
-        var names = fullName.Split('/');
+        string[] names = fullName.Split('/');
         NameHe = names[0].Trim();
         NameEn = names[1].Trim();
         Code = code;
         PosterName = posterName;
     }
 
-    public ShowInformation(string nameHe, string nameEn, int code) : this(nameHe, nameEn, code, null) { }
+    public ShowInformation(string nameHe, string nameEn, int code) : this(nameHe, nameEn, code, null)
+    {
+    }
 
     public ShowInformation(string nameHe, string nameEn, int code, string? posterName)
     {
