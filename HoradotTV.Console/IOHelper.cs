@@ -3,7 +3,7 @@
 internal static class IOHelper
 {
     public static void Print(string s) => System.Console.WriteLine(s);
-    public static void Log(string s) => Print($"[{DateTime.Now:HH:mm:ss}] {s}");
+    public static void Log(string s) => Print($"[{DateTime.Now:T}] {s}");
     public static string Input(string s = "")
     {
         System.Console.Write(s);
@@ -61,8 +61,19 @@ internal static class IOHelper
             Print($"Please enter an valid {type}.");
         } while (true);
     }
-    public static int ChooseOptionRange(int max, string title = "Choose a number") => ChooseOptionRange(0, max, title);
-    public static int ChooseOptionRange(int min, int max, string title = "Choose a number")
+    public static int ChooseOptionIndex(IEnumerable<string> options, string title = "Choose an option")
+    {
+        var optionsList = options.ToList();
+        Print("[0] Back to start");
+        for (var i = 0; i < optionsList.Count; i++)
+        {
+            Print($"[{i + 1}] {optionsList[i]}");
+        }
+
+        return ChooseOptionRange(optionsList.Count, title);
+    }
+    public static int ChooseOptionRange(int max, string title = "Choose an option") => ChooseOptionRange(0, max, title);
+    public static int ChooseOptionRange(int min, int max, string title = "Choose an number")
     {
         int option;
         do

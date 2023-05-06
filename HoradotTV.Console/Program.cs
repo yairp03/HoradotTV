@@ -11,64 +11,27 @@ internal static class Program
         Initialize();
         if (driver is null)
         {
-            Environment.Exit(0);
+            return;
         }
 
-        while (true)
+        MainMenuOption option;
+        do
         {
-            var show = await SelectShow(driver);
-            if (show is null)
+            option = MainMenuChoose();
+            switch (option)
             {
-                continue;
+                case MainMenuOption.Quit:
+                    break;
+                case MainMenuOption.Search:
+                    await DownloadFromSearch();
+                    break;
+                case MainMenuOption.DownloadFromFile:
+                    await DownloadFromFile();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unexpected value option={option}");
             }
-
-            var downloadLocation = SelectDownloadLocation();
-            IOHelper.Print("Full download path: " + Path.GetFullPath(downloadLocation));
-
-            var mode = ChooseMode();
-            if (mode == Mode.None)
-            {
-                continue;
-            }
-
-            if (mode == Mode.Show)
-            {
-                await DownloadShow(driver, show, downloadLocation);
-                continue;
-            }
-
-            var season = await ChooseSeason(driver, show);
-            if (season is null)
-            {
-                continue;
-            }
-
-            if (mode == Mode.Season)
-            {
-                await DownloadSeason(driver, season, downloadLocation);
-                continue;
-            }
-
-            var episode = await ChooseEpisode(driver, season);
-            if (episode is null)
-            {
-                continue;
-            }
-
-            if (mode == Mode.Episode)
-            {
-                await DownloadEpisode(driver, episode, downloadLocation);
-                continue;
-            }
-
-            var episodesAmount = IOHelper.InputPositiveInt("\nEnter episodes amount (0 - cancel): ");
-            if (episodesAmount == 0)
-            {
-                continue;
-            }
-
-            await DownloadEpisodes(driver, episode, episodesAmount, downloadLocation);
-        }
+        } while (option != MainMenuOption.Quit);
     }
 
     private static void Initialize()
@@ -86,15 +49,108 @@ internal static class Program
         }
     }
 
-    private static async Task<ShowInformation?> SelectShow(SdarotDriver driver)
+    private static async Task DownloadFromSearch()
+    {
+        if (driver is null)
+        {
+            return;
+        }
+
+        var show = await SelectShow();
+        if (show is null)
+        {
+            return;
+        }
+
+        var mediaLibraryLocation = await SelectMediaLibraryLocationAsync();
+        IOHelper.Print("Full download path: " + mediaLibraryLocation);
+
+        var mode = ChooseMode();
+        if (mode == Mode.None)
+        {
+            return;
+        }
+
+        if (mode == Mode.Show)
+        {
+            await DownloadShow(show, mediaLibraryLocation);
+            return;
+        }
+
+        var season = await ChooseSeason(show);
+        if (season is null)
+        {
+            return;
+        }
+
+        if (mode == Mode.Season)
+        {
+            await DownloadSeason(season, mediaLibraryLocation);
+            return;
+        }
+
+        var episode = await ChooseEpisode(season);
+        if (episode is null)
+        {
+            return;
+        }
+
+        if (mode == Mode.Episode)
+        {
+            await DownloadEpisode(episode, mediaLibraryLocation);
+            return;
+        }
+
+        var episodesAmount = IOHelper.InputPositiveInt("\nEnter episodes amount (0 - cancel): ");
+        if (episodesAmount == 0)
+        {
+            return;
+        }
+
+        await DownloadEpisodes(episode, episodesAmount, mediaLibraryLocation);
+    }
+
+    private static async Task DownloadFromFile()
+    {
+        var mediaLibraryLocation = await SelectMediaLibraryLocationAsync();
+
+        var episodesFiles = Directory.GetFiles(mediaLibraryLocation, $"*.{Constants.EpisodesFileExtention}").Select(p => new FileInfo(p)).ToList();
+
+        if (episodesFiles.Count == 0)
+        {
+            IOHelper.Print($"Didn't found any .{Constants.EpisodesFileExtention} files.");
+            return;
+        }
+
+        episodesFiles.Sort((FileInfo f1, FileInfo f2) => f2.LastWriteTime.CompareTo(f1.LastWriteTime));
+
+        IOHelper.Print("\nAvailable files (from new to old):");
+        var selection = IOHelper.ChooseOptionIndex(episodesFiles.Select(f => $"({f.LastWriteTime:G}) - {f.Name}"), "Choose as file");
+        if (selection == 0)
+        {
+            return;
+        }
+
+        var episodesList = await JsonSerializer.DeserializeAsync<List<EpisodeInformation>>(episodesFiles[selection - 1].OpenRead());
+        if (episodesList is null)
+        {
+            IOHelper.Print("Bad file format.");
+            return;
+
+        }
+
+        _ = await DownloadEpisodes(episodesList, mediaLibraryLocation);
+    }
+
+    private static async Task<ShowInformation?> SelectShow()
     {
         var searchResult = new List<ShowInformation>();
         do
         {
-            var query = IOHelper.Input($"\nEnter show name or part of it ({Constants.Commands.Quit} - quit): ");
-            if (query == Constants.Commands.Quit)
+            var query = IOHelper.Input($"\nEnter show name or part of it ({Constants.Commands.Cancel} - cancel): ");
+            if (query == Constants.Commands.Cancel)
             {
-                Environment.Exit(0);
+                return null;
             }
 
             if (query.Length < Constants.QueryMinLength)
@@ -103,7 +159,7 @@ internal static class Program
                 continue;
             }
 
-            searchResult = (await driver.SearchShow(query)).ToList();
+            searchResult = (await driver!.SearchShow(query)).ToList();
             if (searchResult.Count == 0)
             {
                 IOHelper.Print("Show not found.");
@@ -111,24 +167,19 @@ internal static class Program
         } while (searchResult.Count == 0);
 
         IOHelper.Print("\nResults:");
-        IOHelper.Print("[0] Back to start");
-        for (var i = 0; i < searchResult.Count; i++)
-        {
-            IOHelper.Print($"[{i + 1}] {searchResult[i].NameEn} - {searchResult[i].NameHe}");
-        }
+        var selection = IOHelper.ChooseOptionIndex(searchResult.Select(s => $"{s.NameEn} - {s.NameHe}"), "Choose as show");
 
-        var selection = IOHelper.ChooseOptionRange(searchResult.Count, "Choose a show");
         return selection == 0 ? null : searchResult[selection - 1];
     }
 
-    private static string SelectDownloadLocation()
+    private static async Task<string> SelectMediaLibraryLocationAsync()
     {
         string path;
         do
         {
             var settings = AppSettings.Default;
             var defaultPath = !string.IsNullOrWhiteSpace(settings.LastPath) ? settings.LastPath : Constants.DefaultDownloadLocation;
-            path = IOHelper.Input($"\nEnter path for download (empty - {defaultPath}): ").Trim();
+            path = IOHelper.Input($"\nEnter path for media library (empty - {defaultPath}): ").Trim();
             if (string.IsNullOrWhiteSpace(path))
             {
                 path = defaultPath;
@@ -142,10 +193,14 @@ internal static class Program
                     IOHelper.Print("Please enter a path to a directory.");
                     path = "";
                 }
-
-                settings.LastPath = path;
-                settings.Save();
+                else
+                {
+                    path = fullPath;
+                    settings.LastPath = path;
+                    await settings.SaveAsync();
+                }
             }
+
             catch
             {
                 IOHelper.Print("Please enter a valid path.");
@@ -156,15 +211,21 @@ internal static class Program
         return path;
     }
 
+    private static MainMenuOption MainMenuChoose()
+    {
+        IOHelper.Print("\n" + Menus.MainMenu);
+        return (MainMenuOption)IOHelper.ChooseOptionRange(Enum.GetNames(typeof(MainMenuOption)).Length - 1, "Choose an option");
+    }
+
     private static Mode ChooseMode()
     {
         IOHelper.Print("\n" + Menus.ModesMenu);
         return (Mode)IOHelper.ChooseOptionRange(Enum.GetNames(typeof(Mode)).Length - 1, "Choose a mode");
     }
 
-    private static async Task<SeasonInformation?> ChooseSeason(SdarotDriver driver, ShowInformation show)
+    private static async Task<SeasonInformation?> ChooseSeason(ShowInformation show)
     {
-        var seasons = await driver.GetSeasonsAsync(show);
+        var seasons = await driver!.GetSeasonsAsync(show);
         var seasonName = IOHelper.ChooseOption(seasons.Select(s => s.Name), "season", "Choose a season");
         if (seasonName == Constants.Commands.Cancel)
         {
@@ -175,9 +236,9 @@ internal static class Program
         return season;
     }
 
-    private static async Task<EpisodeInformation?> ChooseEpisode(SdarotDriver driver, SeasonInformation season)
+    private static async Task<EpisodeInformation?> ChooseEpisode(SeasonInformation season)
     {
-        var episodes = await driver.GetEpisodesAsync(season);
+        var episodes = await driver!.GetEpisodesAsync(season);
         var episodeName = IOHelper.ChooseOption(episodes.Select(e => e.Name), "episode", "Choose an episode");
         if (episodeName == Constants.Commands.Cancel)
         {
@@ -188,16 +249,21 @@ internal static class Program
         return episode;
     }
 
-    private static async Task DownloadShow(SdarotDriver driver, ShowInformation show, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(show), downloadLocation);
-    private static async Task DownloadSeason(SdarotDriver driver, SeasonInformation season, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(season), downloadLocation);
-    private static async Task DownloadEpisode(SdarotDriver driver, EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(driver, new[] { episode }, downloadLocation);
-    private static async Task DownloadEpisodes(SdarotDriver driver, EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(driver, await driver.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
+    private static async Task DownloadShow(ShowInformation show, string downloadLocation) => await DownloadEpisodes(await driver!.GetEpisodesAsync(show), downloadLocation);
+    private static async Task DownloadSeason(SeasonInformation season, string downloadLocation) => await DownloadEpisodes(await driver!.GetEpisodesAsync(season), downloadLocation);
+    private static async Task DownloadEpisode(EpisodeInformation episode, string downloadLocation) => await DownloadEpisodes(new[] { episode }, downloadLocation);
+    private static async Task DownloadEpisodes(EpisodeInformation episode, int episodesAmount, string downloadLocation) => await DownloadEpisodes(await driver!.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
 
-    private static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(SdarotDriver driver, IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
+    private static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
     {
+        if (driver is null)
+        {
+            return null;
+        }
+
         try
         {
-            await LoginToWebsite(driver);
+            await LoginToWebsite();
 
             var failedEpisodes = new List<EpisodeInformation>();
 
@@ -233,7 +299,7 @@ internal static class Program
                 }
 
                 IOHelper.Log($"Loading {episode.Season} {episode}...");
-                var episodeMediaUrl = await GetEpisodeMediaUrl(driver, episode);
+                var episodeMediaUrl = await GetEpisodeMediaUrl(episode);
                 if (episodeMediaUrl is null)
                 {
                     failedEpisodes.Add(episode);
@@ -257,7 +323,7 @@ internal static class Program
                 {
                     if (tryAgainAmount == 0)
                     {
-                        tryAgainAmount += HandleFailedEpisodes(failedEpisodes, downloadLocation);
+                        tryAgainAmount += await HandleFailedEpisodes(failedEpisodes, downloadLocation);
 
                         if (tryAgainAmount == 0)
                         {
@@ -267,7 +333,7 @@ internal static class Program
 
                     tryAgainAmount--;
                     IOHelper.Print($"\nTrying again {failedEpisodes.Count} failed episodes");
-                    failedEpisodes = (await DownloadEpisodes(driver, failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
+                    failedEpisodes = (await DownloadEpisodes(failedEpisodes, downloadLocation, false) ?? Enumerable.Empty<EpisodeInformation>()).ToList();
                 }
 
                 SummarizeDownload(episodesList.Count, failedEpisodes);
@@ -281,7 +347,7 @@ internal static class Program
         return null;
     }
 
-    private static int HandleFailedEpisodes(List<EpisodeInformation> episodes, string downloadLocation)
+    private static async Task<int> HandleFailedEpisodes(List<EpisodeInformation> episodes, string downloadLocation)
     {
         IOHelper.Print("\nThere are still some failed episodes.\nWhat do you want to do with them?");
         IOHelper.Print(Menus.FailedMenu);
@@ -300,7 +366,9 @@ internal static class Program
         if (option == FailedOption.Export)
         {
             var finalLocation = Path.Combine(downloadLocation, $"FailedEpisodes_{DateTime.Now:HH_mm_ss_dd_MM_yyyy}.epis");
-            File.WriteAllText(finalLocation, JsonSerializer.Serialize(episodes, options: new JsonSerializerOptions { WriteIndented = true }));
+            var a = JsonSerializer.Serialize(episodes, new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.Hebrew) });
+            await File.WriteAllTextAsync(finalLocation, a);
+            IOHelper.Print($"Exported to {finalLocation}");
         }
 
         return 0;
@@ -332,8 +400,13 @@ internal static class Program
         }
     }
 
-    private static async Task LoginToWebsite(SdarotDriver driver)
+    private static async Task LoginToWebsite()
     {
+        if (driver is null)
+        {
+            return;
+        }
+
         if (await driver.IsLoggedIn())
         {
             return;
@@ -351,7 +424,7 @@ internal static class Program
                 return;
             }
 
-            settings.ResetCredentials();
+            await settings.ResetCredentialsAsync();
             IOHelper.Print("Bad credentials, proceeding to manual login.");
         }
 
@@ -362,7 +435,7 @@ internal static class Program
             if (await driver.Login(username, password))
             {
                 IOHelper.Print("Logged in successfully, proceeding.");
-                settings.SaveCredentials(username, password);
+                await settings.SaveCredentialsAsync(username, password);
                 return;
             }
 
@@ -370,8 +443,13 @@ internal static class Program
         }
     }
 
-    private static async Task<string?> GetEpisodeMediaUrl(SdarotDriver driver, EpisodeInformation episode, int retries = 2)
+    private static async Task<string?> GetEpisodeMediaUrl(EpisodeInformation episode, int retries = 2)
     {
+        if (driver is null)
+        {
+            return null;
+        }
+
         do
         {
             try
@@ -383,7 +461,7 @@ internal static class Program
                 IOHelper.Log("Error 2, Skipping.");
                 return null;
             }
-            catch
+            catch (WebsiteErrorException)
             {
                 if (retries > 0)
                 {
