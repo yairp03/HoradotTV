@@ -24,18 +24,18 @@ public class AppSettings
         }
     }
 
-    public void Save()
+    public async Task SaveAsync()
     {
         var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, filePath);
-        File.WriteAllText(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    public void SaveCredentials(string username, string password)
+    public async Task SaveCredentialsAsync(string username, string password)
     {
         SdarotUsername = username;
         SdarotPassword = password;
-        Save();
+        await SaveAsync();
     }
 
-    public void ResetCredentials() => SaveCredentials(string.Empty, string.Empty);
+    public async Task ResetCredentialsAsync() => await SaveCredentialsAsync(string.Empty, string.Empty);
 }

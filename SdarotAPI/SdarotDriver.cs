@@ -70,8 +70,7 @@ public class SdarotDriver
 
     public async Task<IEnumerable<ShowInformation>> SearchShow(string searchQuery)
     {
-        var showsJson = await _httpClient.GetStringAsync($"{Constants.SdarotUrls.AjaxAllShowsUrl}");
-        var shows = JsonSerializer.Deserialize<List<ShowInformation>>(showsJson);
+        var shows = await JsonSerializer.DeserializeAsync<List<ShowInformation>>(await _httpClient.GetStreamAsync(Constants.SdarotUrls.AjaxAllShowsUrl));
 
         var relevantShows = shows?.Where(x =>
             x.NameHe.Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase) ||
