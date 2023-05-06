@@ -38,7 +38,7 @@ public class ApiUnitTest
         Trace.WriteLine($"One result: {(await MeasureSearch(driver, "shemesh")).TotalSeconds} seconds.");
     }
 
-    public static async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
+    private static async Task<TimeSpan> MeasureSearch(SdarotDriver driver, string query)
     {
         Stopwatch sw = new();
         sw.Start();
@@ -72,7 +72,7 @@ public class ApiUnitTest
         SdarotDriver driver = new(false);
 
         ShowInformation show = new("איש משפחה", "Family Guy", 1);
-        SeasonInformation season = new(4, 3, "4", show);
+        SeasonInformation season = new("4", 4, 3, show);
 
         Stopwatch sw = new();
         sw.Start();

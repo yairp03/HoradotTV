@@ -2,9 +2,7 @@
 
 public class AppSettings
 {
-    [JsonIgnore]
-    public static AppSettings Default { get; } = LoadSettings();
-    private const string filePath = "appsettings.json";
+    [JsonIgnore] public static AppSettings Default { get; } = LoadSettings();
 
     public string? LastPath { get; set; }
     public string? SdarotUsername { get; set; }
@@ -13,21 +11,23 @@ public class AppSettings
 
     private static AppSettings LoadSettings()
     {
-        var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, filePath);
-        try
+        string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+            Constants.SettingsFileName);
+
+        if (File.Exists(path))
         {
-            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new();
+            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new AppSettings();
         }
-        catch (FileNotFoundException)
-        {
-            return new();
-        }
+
+        return new AppSettings();
     }
 
     public async Task SaveAsync()
     {
-        var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, filePath);
-        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
+        string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+            Constants.SettingsFileName);
+        await File.WriteAllTextAsync(path,
+            JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
     }
 
     public async Task SaveCredentialsAsync(string username, string password)
