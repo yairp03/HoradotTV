@@ -28,8 +28,6 @@ internal static class Program
                 case MainMenuOption.DownloadFromFile:
                     await DownloadFromFile();
                     break;
-                default:
-                    break;
             }
         } while (option != MainMenuOption.Quit);
     }
