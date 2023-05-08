@@ -1,4 +1,4 @@
-﻿namespace SdarotAPI.Exceptions.WebsiteErrors;
+﻿namespace HoradotAPI.Exceptions.WebsiteErrors;
 
 public class ElementNotFoundException : WebsiteErrorException
 {

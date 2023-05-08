@@ -1,4 +1,4 @@
-﻿namespace SdarotAPI.Extensions;
+﻿namespace HoradotAPI.Extensions;
 
 internal static class StreamExtensions
 {

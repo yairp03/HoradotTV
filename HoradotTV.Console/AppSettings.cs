@@ -5,8 +5,7 @@ public class AppSettings
     [JsonIgnore] public static AppSettings Default { get; } = LoadSettings();
 
     public string? LastPath { get; set; }
-    public string? SdarotUsername { get; set; }
-    public string? SdarotPassword { get; set; }
+    public Dictionary<string, (string username, string password)> Credentials { get; init; } = new();
     public bool ForceDownload { get; set; }
 
     private static AppSettings LoadSettings()
@@ -16,7 +15,8 @@ public class AppSettings
 
         if (File.Exists(path))
         {
-            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new AppSettings();
+            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path),
+                new JsonSerializerOptions { IncludeFields = true }) ?? new AppSettings();
         }
 
         return new AppSettings();
@@ -27,15 +27,15 @@ public class AppSettings
         string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
             Constants.SettingsFileName);
         await File.WriteAllTextAsync(path,
-            JsonSerializer.Serialize(this, options: new JsonSerializerOptions { WriteIndented = true }));
+            JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true }));
     }
 
-    public async Task SaveCredentialsAsync(string username, string password)
+    public Task SaveCredentialsAsync(string providerName, string username, string password)
     {
-        SdarotUsername = username;
-        SdarotPassword = password;
-        await SaveAsync();
+        Credentials[providerName] = (username, password);
+        return SaveAsync();
     }
 
-    public async Task ResetCredentialsAsync() => await SaveCredentialsAsync(string.Empty, string.Empty);
+    public Task ResetCredentialsAsync(string providerName) =>
+        SaveCredentialsAsync(providerName, string.Empty, string.Empty);
 }
