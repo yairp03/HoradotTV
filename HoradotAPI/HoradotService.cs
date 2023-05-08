@@ -2,8 +2,8 @@
 
 public class HoradotService : IShowProvider
 {
-    private bool isInitialized;
     private IContentProvider[] contentProviders = Array.Empty<IContentProvider>();
+    private bool isInitialized;
 
     public string Name => "Horadot";
 
@@ -39,29 +39,6 @@ public class HoradotService : IShowProvider
         string errorMessage = string.Join("\n", errorMessages);
         return (string.IsNullOrWhiteSpace(errorMessage), errorMessage);
     }
-
-    public void InitializeAsync(IEnumerable<IContentProvider> providers)
-    {
-        if (isInitialized)
-        {
-            throw new ServiceAlreadyInitialized();
-        }
-
-        contentProviders = providers.ToArray();
-        isInitialized = true;
-    }
-
-    private IContentProvider? GetProvider(string providerName) =>
-        contentProviders.FirstOrDefault(p => p.Name == providerName);
-
-    public Task<bool> IsLoggedIn(string providerName) => GetProvider(providerName) is not IAuthContentProvider provider
-        ? Task.FromResult(true)
-        : provider.IsLoggedIn();
-
-    public Task<bool> Login(string providerName, string username, string password) =>
-        GetProvider(providerName) is not IAuthContentProvider provider
-            ? Task.FromResult(true)
-            : provider.Login(username, password);
 
     public async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
     {
@@ -154,4 +131,27 @@ public class HoradotService : IShowProvider
 
         return provider.GetEpisodesAsync(show);
     }
+
+    public void InitializeAsync(IEnumerable<IContentProvider> providers)
+    {
+        if (isInitialized)
+        {
+            throw new ServiceAlreadyInitialized();
+        }
+
+        contentProviders = providers.ToArray();
+        isInitialized = true;
+    }
+
+    private IContentProvider? GetProvider(string providerName) =>
+        contentProviders.FirstOrDefault(p => p.Name == providerName);
+
+    public Task<bool> IsLoggedIn(string providerName) => GetProvider(providerName) is not IAuthContentProvider provider
+        ? Task.FromResult(true)
+        : provider.IsLoggedIn();
+
+    public Task<bool> Login(string providerName, string username, string password) =>
+        GetProvider(providerName) is not IAuthContentProvider provider
+            ? Task.FromResult(true)
+            : provider.Login(username, password);
 }

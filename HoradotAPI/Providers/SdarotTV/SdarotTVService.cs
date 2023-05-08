@@ -2,11 +2,9 @@
 
 public class SdarotTVService : IAuthContentProvider, IShowProvider
 {
+    private readonly HttpClient httpClient;
     private bool isInitialized;
     private bool isLoggedIn;
-    private readonly HttpClient httpClient;
-
-    public string Name => "SdarotTV";
 
     public SdarotTVService()
     {
@@ -17,25 +15,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
     }
 
-    private static async Task<string> RetrieveSdarotDomain()
-    {
-        using HttpClient client = new();
-        return (await client.GetStringAsync(Constants.Urls.DomainSource)).Trim();
-    }
-
-    private async Task<bool> TestConnection()
-    {
-        try
-        {
-            await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, Constants.Urls.TestUrl));
-        }
-        catch (HttpRequestException)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    public string Name => "SdarotTV";
 
     public Task<(bool success, string errorMessage)> InitializeAsync() => InitializeAsync(true);
 
@@ -98,7 +78,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         {
             throw new ServiceNotInitialized();
         }
-        
+
         if (!await IsLoggedIn())
         {
             throw new NotAuthenticatedException(Name);
@@ -162,22 +142,10 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         DownloadAsync(media, resolution, stream, progress, default(CancellationToken));
 
     public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream, IProgress<long>? progress,
-        CancellationToken ct) => httpClient.DownloadAsync($"https:{media.Resolutions[resolution]}", stream, progress, ct);
+        CancellationToken ct) =>
+        httpClient.DownloadAsync($"https:{media.Resolutions[resolution]}", stream, progress, ct);
 
     public Task<bool> IsLoggedIn() => Task.FromResult(isLoggedIn);
-
-    private async Task<bool> CheckLoggedIn()
-    {
-        string searchHtml = await httpClient.GetStringAsync(Constants.Urls.HomeUrl);
-        var doc = new HtmlDocument();
-        doc.LoadHtml(searchHtml);
-
-        var loginPanelButton = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.MainPageLoginPanelButton);
-
-        return loginPanelButton != null
-            ? loginPanelButton.InnerText != Constants.LoginMessage
-            : throw new ElementNotFoundException(nameof(loginPanelButton));
-    }
 
     public async Task<bool> Login(string username, string password)
     {
@@ -300,6 +268,39 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         }
 
         return episodes;
+    }
+
+    private static async Task<string> RetrieveSdarotDomain()
+    {
+        using HttpClient client = new();
+        return (await client.GetStringAsync(Constants.Urls.DomainSource)).Trim();
+    }
+
+    private async Task<bool> TestConnection()
+    {
+        try
+        {
+            await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, Constants.Urls.TestUrl));
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> CheckLoggedIn()
+    {
+        string searchHtml = await httpClient.GetStringAsync(Constants.Urls.HomeUrl);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(searchHtml);
+
+        var loginPanelButton = doc.DocumentNode.SelectSingleNode(Constants.XPathSelectors.MainPageLoginPanelButton);
+
+        return loginPanelButton != null
+            ? loginPanelButton.InnerText != Constants.LoginMessage
+            : throw new ElementNotFoundException(nameof(loginPanelButton));
     }
 
     private static class Constants

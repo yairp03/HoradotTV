@@ -1,6 +1,4 @@
-﻿using HoradotAPI.Providers.SdarotTV;
-
-namespace HoradotAPITest;
+﻿namespace HoradotAPITest;
 
 [TestClass]
 public class ApiUnitTest

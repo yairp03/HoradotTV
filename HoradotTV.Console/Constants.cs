@@ -5,13 +5,13 @@ internal static class Constants
     public const string SoftwareVersion = "1.4.0";
 
     public const int QueryMinLength = 2;
-
-    public static readonly string DefaultDownloadLocation = KnownFolders.Downloads.Path;
     public const string SettingsFileName = "appsettings.json";
 
     public const string DefaultMediaFormat = "mp4";
 
     public const string MediaFileExtension = "media";
+
+    public static readonly string DefaultDownloadLocation = KnownFolders.Downloads.Path;
 
     public static class Commands
     {

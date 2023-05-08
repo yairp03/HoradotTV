@@ -16,7 +16,7 @@ public class AppSettings
         if (File.Exists(path))
         {
             return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path),
-                new JsonSerializerOptions() { IncludeFields = true }) ?? new AppSettings();
+                new JsonSerializerOptions { IncludeFields = true }) ?? new AppSettings();
         }
 
         return new AppSettings();

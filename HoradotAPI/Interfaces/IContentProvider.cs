@@ -2,7 +2,6 @@
 
 public interface IContentProvider
 {
-    public const bool LoginRequired = false;
     public string Name { get; }
 
     public Task<(bool success, string errorMessage)> InitializeAsync();
