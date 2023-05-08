@@ -46,11 +46,22 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
             throw new ServiceNotInitialized();
         }
 
-        var result =
-            (await JsonSerializer.DeserializeAsync<List<SdarotTVShowInformation>>(
-                await httpClient.GetStreamAsync(Constants.Urls.AjaxAllShowsUrl)))?.Where(x =>
-                x.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                x.NameHe.Contains(query, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        List<SdarotTVShowInformation>? result = null;
+        for (int i = 0; i < Constants.SearchRetries; i++)
+        {
+            try
+            {
+                result = (await JsonSerializer.DeserializeAsync<List<SdarotTVShowInformation>>(
+                    await httpClient.GetStreamAsync(Constants.Urls.AjaxAllShowsUrl)))?.Where(x =>
+                    x.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                    x.NameHe.Contains(query, StringComparison.CurrentCultureIgnoreCase)).ToList();
+                break;
+            }
+            catch
+            {
+                // Try again
+            }
+        }
 
         if (result is null)
         {
@@ -312,6 +323,8 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
 
         internal const double WaitAmount = 30.0;
         internal const int WaitUps = 10;
+
+        internal const int SearchRetries = 3;
 
         internal static class Urls
         {

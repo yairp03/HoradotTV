@@ -74,9 +74,22 @@ public class SratimTVService : IContentProvider
             ["term"] = query
         };
 
-        var searchResult = await JsonSerializer.DeserializeAsync<SratimTVSearchResult>(
-            await (await httpClient.PostAsync(Constants.Urls.ApiMovieSearchUrl, new FormUrlEncodedContent(data)))
-                .Content.ReadAsStreamAsync());
+        SratimTVSearchResult? searchResult = null;
+        for (int i = 0; i < Constants.SearchRetries; i++)
+        {
+            try
+            {
+                searchResult = await JsonSerializer.DeserializeAsync<SratimTVSearchResult>(
+                    await (await httpClient.PostAsync(Constants.Urls.ApiMovieSearchUrl,
+                        new FormUrlEncodedContent(data))).Content.ReadAsStreamAsync());
+                break;
+            }
+            catch
+            {
+                // Try again
+            }
+        }
+
 
         if (searchResult is null)
         {
@@ -155,9 +168,11 @@ public class SratimTVService : IContentProvider
         internal const string ImagesFormat = "jpg";
 
         internal const int QueryMinLength = 3;
-        
+
         internal const double WaitAmount = 30.0;
         internal const int WaitUps = 10;
+
+        internal const int SearchRetries = 3;
 
         internal static class Urls
         {

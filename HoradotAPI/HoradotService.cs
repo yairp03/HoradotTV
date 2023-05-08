@@ -23,7 +23,7 @@ public class HoradotService : IShowProvider
             new SratimTVService()
         };
 
-        var initializeTasks = providersList.Select(provider => provider.InitializeAsync()).ToList();
+        var initializeTasks = providersList.Select(provider => provider.InitializeAsync(doChecks)).ToList();
         await Task.WhenAll(initializeTasks);
         for (int i = providersList.Count - 1; i >= 0; i--)
         {
