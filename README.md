@@ -4,7 +4,7 @@ Downloader for Shows/Movies providers.
 
 Currently supported providers:
 - SdarotTV
-- SratimTV (Coming soon)
+- SratimTV
 
 ## HoradotAPI
 
@@ -19,14 +19,17 @@ The library also has built-in support for the following providers:
   - Access SdarotTV's media servers.
   - Login to SdarotTV.
   - Signup to SdarotTV (Coming soon)
-- SratimTV (Coming soon)
+- SratimTV
+  - Access SratimTV's search engine.
+  - Access metadata of movies.
+  - Access SratimTV's media servers.
 
 ## Console App
 
 The console app is a command-line application that utilizes the HoradotAPI library, with the power to Download in 4 different download modes:
 
 - Single episode download.
-- Multiple episode download.
+- Multiple episodes download.
 - Complete season download.
 - Complete show download.
 - Movie download.
@@ -62,7 +65,6 @@ Contributors who are willing to help utilize the `HoradotAPI` library to build t
 
 ## Future Development
 
-- Support for SratimTV.
 - Release updater.
 - GUI app.
 - HordotAPI in Python. (In the meanwhile, check out [Xiddoc's python API for SdarotTV](https://github.com/Xiddoc/PySdarot))
@@ -70,6 +72,7 @@ Contributors who are willing to help utilize the `HoradotAPI` library to build t
 ## Contributing
 
 If the URL for SdarotTV changes, please fork the repository, change the [SdarotTV-domain.txt](/Resources/SdarotTV-domain.txt) file, and open a PR.
+Same for SratimTV, but with the [SratimTV-domain.txt](/Resources/SratimTV-domain.txt) file.
 
 If you find any bugs or have any suggestions, please open an issue on [GitHub](https://github.com/yairp03/HoradotTV/issues).
 
