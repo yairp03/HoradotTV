@@ -313,7 +313,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         internal static class Urls
         {
             internal const string DomainSource =
-                "https://raw.githubusercontent.com/yairp03/HoradotTV/master/Resources/sdarot-url.txt";
+                "https://raw.githubusercontent.com/yairp03/HoradotTV/master/Resources/SdarotTV-url.txt";
 
             internal const string ConnectionProblemGuide =
                 "https://github.com/yairp03/HoradotTV/wiki/SdarotTV-connection-problem";
