@@ -180,7 +180,7 @@ internal static class Program
 
         IOHelper.Print("\nResults:");
         int selection =
-            IOHelper.ChooseOptionIndex(searchResult.Select(s => $"{s.Name} - {s.NameHe}"), "Choose a show/movie");
+            IOHelper.ChooseOptionIndex(searchResult.Select(s => $"({s.ProviderName}) {s.Name} - {s.NameHe}"), "Choose a show/movie");
 
         return selection == 0 ? null : searchResult[selection - 1];
     }
@@ -385,6 +385,8 @@ internal static class Program
                 IOHelper.Print($"Exported to {finalLocation}");
                 break;
             }
+            default:
+                throw new InvalidOperationException("Bad option.");
         }
 
         return 0;
