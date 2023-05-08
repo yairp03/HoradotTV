@@ -385,6 +385,8 @@ internal static class Program
                 IOHelper.Print($"Exported to {finalLocation}");
                 break;
             }
+            default:
+                throw new InvalidOperationException("Bad option.");
         }
 
         return 0;

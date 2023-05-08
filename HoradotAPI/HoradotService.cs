@@ -1,15 +1,13 @@
 ﻿namespace HoradotAPI;
 
-public class HoradotService : IShowProvider
+public class HoradotService : BaseShowProvider, IShowProvider
 {
     private IContentProvider[] contentProviders = Array.Empty<IContentProvider>();
     private bool isInitialized;
 
-    public string Name => "Horadot";
+    public override string Name => "Horadot";
 
-    public Task<(bool success, string errorMessage)> InitializeAsync() => InitializeAsync(true);
-
-    public async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
+    public override async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
     {
         if (isInitialized)
         {
@@ -44,7 +42,18 @@ public class HoradotService : IShowProvider
         return (string.IsNullOrWhiteSpace(errorMessage), errorMessage);
     }
 
-    public async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
+    public void InitializeAsync(IEnumerable<IContentProvider> providers)
+    {
+        if (isInitialized)
+        {
+            throw new ServiceAlreadyInitialized();
+        }
+
+        contentProviders = providers.ToArray();
+        isInitialized = true;
+    }
+
+    public override async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
     {
         if (!isInitialized)
         {
@@ -53,7 +62,7 @@ public class HoradotService : IShowProvider
 
         var searchTasks = contentProviders.Select(provider => provider.SearchAsync(query)).ToList();
         await Task.WhenAll(searchTasks);
-        
+
         List<MediaInformation> results = new();
         foreach (var searchTask in searchTasks)
         {
@@ -63,14 +72,8 @@ public class HoradotService : IShowProvider
         return results;
     }
 
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media) =>
-        PrepareDownloadAsync(media, null);
-
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress) =>
-        PrepareDownloadAsync(media, progress, default(CancellationToken));
-
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress,
-        CancellationToken ct)
+    public override Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
+        IProgress<double>? progress, CancellationToken ct)
     {
         var provider = GetProvider(media.ProviderName);
         if (provider is null)
@@ -81,14 +84,8 @@ public class HoradotService : IShowProvider
         return provider.PrepareDownloadAsync(media, progress, ct);
     }
 
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream) =>
-        DownloadAsync(media, resolution, stream, null);
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
-        IProgress<long>? progress) => DownloadAsync(media, resolution, stream, progress, default(CancellationToken));
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream, IProgress<long>? progress,
-        CancellationToken ct)
+    public override Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
+        IProgress<long>? progress, CancellationToken ct)
     {
         var provider = GetProvider(media.Information.ProviderName);
         if (provider is null)
@@ -99,7 +96,7 @@ public class HoradotService : IShowProvider
         return provider.DownloadAsync(media, resolution, stream, progress, ct);
     }
 
-    public Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
+    public override Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
     {
         if (GetProvider(show.ProviderName) is not IShowProvider provider)
         {
@@ -109,7 +106,7 @@ public class HoradotService : IShowProvider
         return provider.GetSeasonsAsync(show);
     }
 
-    public Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
+    public override Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
         if (GetProvider(season.ProviderName) is not IShowProvider provider)
         {
@@ -119,7 +116,8 @@ public class HoradotService : IShowProvider
         return provider.GetEpisodesAsync(season);
     }
 
-    public Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode, int maxEpisodeAmount)
+    public new Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode,
+        int maxEpisodeAmount)
     {
         if (GetProvider(firstEpisode.ProviderName) is not IShowProvider provider)
         {
@@ -129,7 +127,7 @@ public class HoradotService : IShowProvider
         return provider.GetEpisodesAsync(firstEpisode, maxEpisodeAmount);
     }
 
-    public Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(ShowInformation show)
+    public new Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(ShowInformation show)
     {
         if (GetProvider(show.ProviderName) is not IShowProvider provider)
         {
@@ -137,17 +135,6 @@ public class HoradotService : IShowProvider
         }
 
         return provider.GetEpisodesAsync(show);
-    }
-
-    public void InitializeAsync(IEnumerable<IContentProvider> providers)
-    {
-        if (isInitialized)
-        {
-            throw new ServiceAlreadyInitialized();
-        }
-
-        contentProviders = providers.ToArray();
-        isInitialized = true;
     }
 
     private IContentProvider? GetProvider(string providerName) =>

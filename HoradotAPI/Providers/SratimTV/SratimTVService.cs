@@ -1,6 +1,6 @@
 ﻿namespace HoradotAPI.Providers.SratimTV;
 
-public class SratimTVService : IContentProvider
+public class SratimTVService : BaseContentProvider, IContentProvider
 {
     private readonly HttpClient httpClient;
     private bool isInitialized;
@@ -14,10 +14,9 @@ public class SratimTVService : IContentProvider
         httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
     }
 
-    public string Name => "SratimTV";
-    public Task<(bool success, string errorMessage)> InitializeAsync() => InitializeAsync(true);
+    public override string Name => "SratimTV";
 
-    public async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
+    public override async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
     {
         if (isInitialized)
         {
@@ -57,7 +56,7 @@ public class SratimTVService : IContentProvider
         return true;
     }
 
-    public async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
+    public override async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
     {
         if (!isInitialized)
         {
@@ -104,13 +103,7 @@ public class SratimTVService : IContentProvider
         return searchResult.Results;
     }
 
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media) =>
-        PrepareDownloadAsync(media, null);
-
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress) =>
-        PrepareDownloadAsync(media, progress, default(CancellationToken));
-
-    public async Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
+    public override async Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
         IProgress<double>? progress, CancellationToken ct)
     {
         if (!isInitialized)
@@ -147,14 +140,8 @@ public class SratimTVService : IContentProvider
         };
     }
 
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream) =>
-        DownloadAsync(media, resolution, stream, null);
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
-        IProgress<long>? progress) => DownloadAsync(media, resolution, stream, progress, default(CancellationToken));
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream, IProgress<long>? progress,
-        CancellationToken ct) =>
+    public override Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
+        IProgress<long>? progress, CancellationToken ct) =>
         httpClient.DownloadAsync($"https:{media.Resolutions[resolution]}", stream, progress, ct);
 
     private static string GetMovieUrl(MediaInformation movie, string token) =>

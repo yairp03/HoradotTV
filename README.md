@@ -19,6 +19,7 @@ The library also has built-in support for the following providers:
   - Access SdarotTV's media servers.
   - Login to SdarotTV.
   - Signup to SdarotTV (Coming soon)
+
 - SratimTV
   - Access SratimTV's search engine.
   - Access metadata of movies.

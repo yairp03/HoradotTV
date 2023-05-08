@@ -1,6 +1,6 @@
 ﻿namespace HoradotAPI.Providers.SdarotTV;
 
-public class SdarotTVService : IAuthContentProvider, IShowProvider
+public class SdarotTVService : BaseShowProvider, IShowProvider, IAuthContentProvider
 {
     private readonly HttpClient httpClient;
     private bool isInitialized;
@@ -15,11 +15,10 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
     }
 
-    public string Name => "SdarotTV";
+    public override string Name => "SdarotTV";
 
-    public Task<(bool success, string errorMessage)> InitializeAsync() => InitializeAsync(true);
 
-    public async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
+    public override async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
     {
         if (isInitialized)
         {
@@ -39,7 +38,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         return (true, string.Empty);
     }
 
-    public async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
+    public override async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
     {
         if (!isInitialized)
         {
@@ -76,13 +75,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         return result;
     }
 
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media) =>
-        PrepareDownloadAsync(media, null);
-
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress) =>
-        PrepareDownloadAsync(media, progress, default(CancellationToken));
-
-    public async Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
+    public override async Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
         IProgress<double>? progress, CancellationToken ct)
     {
         if (!isInitialized)
@@ -145,15 +138,8 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         };
     }
 
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream) =>
-        DownloadAsync(media, resolution, stream, null);
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
-        IProgress<long>? progress) =>
-        DownloadAsync(media, resolution, stream, progress, default(CancellationToken));
-
-    public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream, IProgress<long>? progress,
-        CancellationToken ct) =>
+    public override Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
+        IProgress<long>? progress, CancellationToken ct) =>
         httpClient.DownloadAsync($"https:{media.Resolutions[resolution]}", stream, progress, ct);
 
     public Task<bool> IsLoggedIn() => Task.FromResult(isLoggedIn);
@@ -174,7 +160,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         return isLoggedIn;
     }
 
-    public async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
+    public override async Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
     {
         string showHtml = await httpClient.GetStringAsync($"{Constants.Urls.WatchUrl}{show.Id}");
         var doc = new HtmlDocument();
@@ -205,7 +191,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         return seasons;
     }
 
-    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
+    public override async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
         string episodesHtml =
             await httpClient.GetStringAsync(
@@ -233,49 +219,6 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
                 ProviderName = Name,
                 Season = season
             });
-        }
-
-        return episodes;
-    }
-
-    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode,
-        int maxEpisodeAmount)
-    {
-        var episodesBuffer =
-            new Queue<EpisodeInformation>(
-                (await GetEpisodesAsync(firstEpisode.Season)).ToArray()[firstEpisode.Index..]);
-        var seasonBuffer =
-            new Queue<SeasonInformation>(
-                (await GetSeasonsAsync(firstEpisode.Season.Show)).ToArray()[(firstEpisode.Season.Index + 1)..]);
-
-        List<EpisodeInformation> episodes = new();
-        while (episodes.Count < maxEpisodeAmount)
-        {
-            if (episodesBuffer.Count == 0)
-            {
-                if (seasonBuffer.Count == 0)
-                {
-                    break;
-                }
-
-                episodesBuffer = new Queue<EpisodeInformation>(await GetEpisodesAsync(seasonBuffer.Dequeue()));
-                continue;
-            }
-
-            episodes.Add(episodesBuffer.Dequeue());
-        }
-
-        return episodes;
-    }
-
-    public async Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(ShowInformation show)
-    {
-        var seasons = await GetSeasonsAsync(show);
-
-        List<EpisodeInformation> episodes = new();
-        foreach (var season in seasons)
-        {
-            episodes.AddRange(await GetEpisodesAsync(season));
         }
 
         return episodes;
