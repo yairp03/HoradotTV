@@ -8,7 +8,7 @@ Currently supported providers:
 
 ## HoradotAPI
 
-The HoradotAPI is a library allowing you t to access metadata and download shows/movies from content providers.
+The HoradotAPI is a library allowing you to access metadata and download shows/movies from content providers.
 
 The library is very extensible and allows you to add support for new providers easily.
 
