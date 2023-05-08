@@ -17,21 +17,23 @@ public class HoradotService : IShowProvider
         }
 
         List<string> errorMessages = new();
-        List<IContentProvider> providersList = new();
-
-        // Add SdarotTVService
-        SdarotTVService sdarotTVService = new();
-        (bool success, string message) currResult = await sdarotTVService.InitializeAsync();
-        if (currResult.success)
+        List<IContentProvider> providersList = new()
         {
-            providersList.Add(sdarotTVService);
-        }
-        else
-        {
-            errorMessages.Add(currResult.message);
-        }
+            new SdarotTVService(),
+            new SratimTVService()
+        };
 
-        // Add HoradotTVService
+        for (int i = providersList.Count - 1; i >= 0; i--)
+        {
+            (bool success, string message) = await providersList[i].InitializeAsync();
+            if (success)
+            {
+                continue;
+            }
+
+            errorMessages.Add(message);
+            providersList.RemoveAt(i);
+        }
 
         contentProviders = providersList.ToArray();
         isInitialized = true;

@@ -26,7 +26,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
             throw new ServiceAlreadyInitialized();
         }
 
-        Constants.Urls.BaseDomain = await RetrieveSdarotDomain();
+        Constants.Urls.BaseDomain = await RetrieveSdarotTVDomain();
         httpClient.DefaultRequestHeaders.Referrer = new Uri(Constants.Urls.HomeUrl);
 
         if (doChecks && !await TestConnection())
@@ -270,7 +270,7 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         return episodes;
     }
 
-    private static async Task<string> RetrieveSdarotDomain()
+    private static async Task<string> RetrieveSdarotTVDomain()
     {
         using HttpClient client = new();
         return (await client.GetStringAsync(Constants.Urls.DomainSource)).Trim();

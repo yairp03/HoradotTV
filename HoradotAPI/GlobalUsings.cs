@@ -11,3 +11,4 @@ global using HoradotAPI.Extensions;
 global using HoradotAPI.Models;
 global using HoradotAPI.Interfaces;
 global using HoradotAPI.Providers.SdarotTV;
+global using HoradotAPI.Providers.SratimTV;

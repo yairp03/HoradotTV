@@ -24,7 +24,7 @@ internal static class Menus
     public const string MainMenu = $"""
         -- Main Menu --
         [0] Quit
-        [1] Search Show
+        [1] Search Show/Movie
         [2] Download from .{Constants.MediaFileExtension} file
         """;
 
