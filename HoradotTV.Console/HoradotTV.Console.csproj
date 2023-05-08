@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SdarotAPI\SdarotAPI.csproj" />
+    <ProjectReference Include="..\HoradotAPI\HoradotAPI.csproj" />
   </ItemGroup>
 
 </Project>

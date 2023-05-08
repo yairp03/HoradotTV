@@ -2,14 +2,13 @@
 
 internal static class Program
 {
-    private static SdarotDriver? _driver;
+    private static readonly HoradotService HoradotService = new();
 
     private static async Task Main()
     {
         IOHelper.Print($"Welcome to HoradotTV {Constants.SoftwareVersion}!");
         IOHelper.Print("Initializing...");
-        Initialize();
-        if (_driver is null)
+        if (!await InitializeAsync())
         {
             return;
         }
@@ -34,37 +33,43 @@ internal static class Program
         } while (option != MainMenuOption.Quit);
     }
 
-    private static void Initialize()
+    private static async Task<bool> InitializeAsync()
     {
         System.Console.InputEncoding = Encoding.Unicode;
         System.Console.OutputEncoding = Encoding.Unicode;
 
-        try
+        var result = await HoradotService.InitializeAsync();
+        if (result.success)
         {
-            _driver = new SdarotDriver();
+            return true;
         }
-        catch (SdarotBlockedException)
-        {
-            IOHelper.Print(
-                $"\nSdarotTV is blocked. Please follow this guide to unblock it:\n{Constants.SdarotConnectionProblemGuide}");
-        }
+
+        System.Console.WriteLine(result.errorMessage);
+        return false;
     }
 
     private static async Task DownloadFromSearch()
     {
-        if (_driver is null)
-        {
-            return;
-        }
+        var media = await SelectMedia();
 
-        var show = await SelectShow();
-        if (show is null)
+        if (media is null)
         {
             return;
         }
 
         string mediaLibraryLocation = await SelectMediaLibraryLocationAsync();
         IOHelper.Print("Full download path: " + mediaLibraryLocation);
+
+        if (media is MovieInformation movie)
+        {
+            await DownloadMedia(movie, mediaLibraryLocation);
+            return;
+        }
+
+        if (media is not ShowInformation show)
+        {
+            throw new BadMediaTypeException();
+        }
 
         var mode = ChooseMode();
         if (mode == Mode.None)
@@ -98,7 +103,7 @@ internal static class Program
 
         if (mode == Mode.Episode)
         {
-            await DownloadEpisode(episode, mediaLibraryLocation);
+            await DownloadMedia(episode, mediaLibraryLocation);
             return;
         }
 
@@ -118,42 +123,43 @@ internal static class Program
     {
         string mediaLibraryLocation = await SelectMediaLibraryLocationAsync();
 
-        var episodesFiles = Directory.GetFiles(mediaLibraryLocation, $"*.{Constants.EpisodesFileExtension}")
+        var mediaFiles = Directory.GetFiles(mediaLibraryLocation, $"*.{Constants.MediaFileExtension}")
             .Select(p => new FileInfo(p)).ToList();
 
-        if (episodesFiles.Count == 0)
+        if (mediaFiles.Count == 0)
         {
-            IOHelper.Print($"Didn't found any .{Constants.EpisodesFileExtension} files.");
+            IOHelper.Print($"Didn't found any .{Constants.MediaFileExtension} files.");
             return;
         }
 
-        episodesFiles.Sort((f1, f2) => f2.LastWriteTime.CompareTo(f1.LastWriteTime));
+        mediaFiles.Sort((f1, f2) => f2.LastWriteTime.CompareTo(f1.LastWriteTime));
 
         IOHelper.Print("\nAvailable files (from new to old):");
-        int selection = IOHelper.ChooseOptionIndex(episodesFiles.Select(f => $"({f.LastWriteTime:G}) - {f.Name}"),
+        int selection = IOHelper.ChooseOptionIndex(mediaFiles.Select(f => $"({f.LastWriteTime:G}) - {f.Name}"),
             "Choose as file");
         if (selection == 0)
         {
             return;
         }
 
-        var episodesList =
-            await JsonSerializer.DeserializeAsync<List<EpisodeInformation>>(episodesFiles[selection - 1].OpenRead());
-        if (episodesList is null)
+        var mediaList =
+            await JsonSerializer.DeserializeAsync<List<MediaInformation>>(mediaFiles[selection - 1].OpenRead());
+        if (mediaList is null)
         {
             IOHelper.Print("Bad file format.");
             return;
         }
 
-        _ = await DownloadEpisodes(episodesList, mediaLibraryLocation);
+        _ = await DownloadMedia(mediaList, mediaLibraryLocation);
     }
 
-    private static async Task<ShowInformation?> SelectShow()
+    private static async Task<MediaInformation?> SelectMedia()
     {
-        var searchResult = new List<ShowInformation>();
+        var searchResult = new List<MediaInformation>();
         do
         {
-            string query = IOHelper.Input($"\nEnter show name or part of it ({Constants.Commands.Cancel} - cancel): ");
+            string query =
+                IOHelper.Input($"\nEnter show/movie name or part of it ({Constants.Commands.Cancel} - cancel): ");
             if (query == Constants.Commands.Cancel)
             {
                 return null;
@@ -165,16 +171,16 @@ internal static class Program
                 continue;
             }
 
-            searchResult = (await _driver!.SearchShow(query)).ToList();
+            searchResult = (await HoradotService.SearchAsync(query)).ToList();
             if (searchResult.Count == 0)
             {
-                IOHelper.Print("Show not found.");
+                IOHelper.Print("Not found.");
             }
         } while (searchResult.Count == 0);
 
         IOHelper.Print("\nResults:");
         int selection =
-            IOHelper.ChooseOptionIndex(searchResult.Select(s => $"{s.NameEn} - {s.NameHe}"), "Choose as show");
+            IOHelper.ChooseOptionIndex(searchResult.Select(s => $"{s.Name} - {s.NameHe}"), "Choose a show/movie");
 
         return selection == 0 ? null : searchResult[selection - 1];
     }
@@ -234,7 +240,7 @@ internal static class Program
 
     private static async Task<SeasonInformation?> ChooseSeason(ShowInformation show)
     {
-        var seasons = (await _driver!.GetSeasonsAsync(show)).ToList();
+        var seasons = (await HoradotService.GetSeasonsAsync(show)).ToList();
         string seasonName = IOHelper.ChooseOption(seasons.Select(s => s.Name), "season", "Choose a season");
         if (seasonName == Constants.Commands.Cancel)
         {
@@ -247,7 +253,7 @@ internal static class Program
 
     private static async Task<EpisodeInformation?> ChooseEpisode(SeasonInformation season)
     {
-        var episodes = (await _driver!.GetEpisodesAsync(season)).ToList();
+        var episodes = (await HoradotService.GetEpisodesAsync(season)).ToList();
         string episodeName = IOHelper.ChooseOption(episodes.Select(e => e.Name), "episode", "Choose an episode");
         if (episodeName == Constants.Commands.Cancel)
         {
@@ -258,87 +264,79 @@ internal static class Program
         return episode;
     }
 
-    private static async Task DownloadShow(ShowInformation show, string downloadLocation) =>
-        await DownloadEpisodes(await _driver!.GetEpisodesAsync(show), downloadLocation);
+    private static async Task DownloadShow(ShowInformation media, string downloadLocation) =>
+        await DownloadMedia(await HoradotService.GetEpisodesAsync(media), downloadLocation);
 
     private static async Task DownloadSeason(SeasonInformation season, string downloadLocation) =>
-        await DownloadEpisodes(await _driver!.GetEpisodesAsync(season), downloadLocation);
+        await DownloadMedia(await HoradotService.GetEpisodesAsync(season), downloadLocation);
 
-    private static async Task DownloadEpisode(EpisodeInformation episode, string downloadLocation) =>
-        await DownloadEpisodes(new[] { episode }, downloadLocation);
+    private static Task DownloadMedia(MediaInformation media, string downloadLocation) =>
+        DownloadMedia(media.Yield(), downloadLocation);
 
     private static async Task
         DownloadEpisodes(EpisodeInformation episode, int episodesAmount, string downloadLocation) =>
-        await DownloadEpisodes(await _driver!.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
+        await DownloadMedia(await HoradotService.GetEpisodesAsync(episode, episodesAmount), downloadLocation);
 
-    private static async Task<IEnumerable<EpisodeInformation>?> DownloadEpisodes(
-        IEnumerable<EpisodeInformation> episodes, string downloadLocation, bool rootRun = true)
+    private static async Task<IEnumerable<MediaInformation>?> DownloadMedia(
+        IEnumerable<MediaInformation> mediaToDownload, string downloadLocation, bool rootRun = true)
     {
-        if (_driver is null)
-        {
-            return null;
-        }
-
         try
         {
-            await LoginToWebsite();
+            List<MediaInformation> failedMedia = new();
 
-            var failedEpisodes = new List<EpisodeInformation>();
+            var mediaList = mediaToDownload.ToList();
 
-            var episodesList = episodes.ToList();
+            await LoginToProviders(mediaList.Select(m => m.ProviderName).Distinct());
 
             if (!AppSettings.Default.ForceDownload)
             {
-                var filteredList = episodesList
+                var filteredList = mediaList
                     .Where(episode => !File.Exists(GetFullDownloadLocation(downloadLocation, episode))).ToList();
 
-                int exists = episodesList.Count - filteredList.Count;
+                int exists = mediaList.Count - filteredList.Count;
                 if (exists > 0)
                 {
-                    IOHelper.Print($"\nFound {exists} existing episodes. Ignoring them.");
-                    episodesList = filteredList;
+                    IOHelper.Print($"\nFound {exists} existing media files. Ignoring them.");
+                    mediaList = filteredList;
                 }
             }
 
-            foreach (var (episode, i) in episodesList.Select((value, i) => (value, i)))
+            foreach (var (media, i) in mediaList.Select((value, i) => (value, i)))
             {
-                IOHelper.Print($"\n({i + 1}/{episodesList.Count})");
-                string finalLocation = GetFullDownloadLocation(downloadLocation, episode);
-                if (File.Exists(finalLocation) && !AppSettings.Default.ForceDownload)
+                IOHelper.Print($"\n({i + 1}/{mediaList.Count})");
+                string finalLocation = GetFullDownloadLocation(downloadLocation, media);
+
+                IOHelper.Log($"Loading {media}...");
+                var mediaDownloadInformation = await LoadMedia(media);
+                if (mediaDownloadInformation is null)
                 {
-                    IOHelper.Print($"{episode.Season} {episode} already downloaded. Skipping.");
+                    failedMedia.Add(media);
+                    IOHelper.Log("Failed. Proceeding to next media.");
                     continue;
                 }
 
-                IOHelper.Log($"Loading {episode.Season} {episode}...");
-                string? episodeMediaUrl = await GetEpisodeMediaUrl(episode);
-                if (episodeMediaUrl is null)
-                {
-                    failedEpisodes.Add(episode);
-                    IOHelper.Log("Failed. Proceeding to next episode.");
-                    continue;
-                }
-
-                IOHelper.Log($"Downloading {episode.Season} {episode}...");
+                IOHelper.Log($"Downloading {media}...");
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(finalLocation)!);
                 await using var file = new FileStream(finalLocation, FileMode.Create, FileAccess.Write, FileShare.None);
-                await _driver.DownloadEpisodeAsync($"https:{episodeMediaUrl}", file);
+                await HoradotService.DownloadAsync(mediaDownloadInformation,
+                    mediaDownloadInformation.Resolutions.Max(r => r.Key), file);
                 IOHelper.Log("Download completed.");
             }
 
             IOHelper.Log("Finished.");
+            SummarizeDownload(mediaList.Count, failedMedia);
 
             if (!rootRun)
             {
-                return failedEpisodes;
+                return failedMedia;
             }
 
             int tryAgainAmount = 1;
-            while (failedEpisodes.Count > 0)
+            while (failedMedia.Count > 0)
             {
                 if (tryAgainAmount == 0)
                 {
-                    tryAgainAmount += await HandleFailedEpisodes(failedEpisodes, downloadLocation);
+                    tryAgainAmount += await HandleFailedMedia(failedMedia, downloadLocation);
 
                     if (tryAgainAmount == 0)
                     {
@@ -347,68 +345,73 @@ internal static class Program
                 }
 
                 tryAgainAmount--;
-                IOHelper.Print($"\nTrying again {failedEpisodes.Count} failed episodes");
-                failedEpisodes = (await DownloadEpisodes(failedEpisodes, downloadLocation, false) ??
-                                  Enumerable.Empty<EpisodeInformation>()).ToList();
+                IOHelper.Print($"\nTrying again {failedMedia.Count} failed media");
+                failedMedia = (await DownloadMedia(failedMedia, downloadLocation, false) ??
+                               Enumerable.Empty<MediaInformation>()).ToList();
             }
 
-            SummarizeDownload(episodesList.Count, failedEpisodes);
             IOHelper.Print("\nDone. Returning to start.");
 
-            return failedEpisodes;
+            return failedMedia;
         }
-        catch
+        catch (Exception e)
         {
+            IOHelper.Print($"Caught exception: {e}");
             /* Every exception thrown */
         }
 
         return null;
     }
 
-    private static async Task<int> HandleFailedEpisodes(List<EpisodeInformation> episodes, string downloadLocation)
+    private static async Task<int> HandleFailedMedia(List<MediaInformation> media, string downloadLocation)
     {
-        IOHelper.Print("\nThere are still some failed episodes.\nWhat do you want to do with them?");
+        IOHelper.Print("\nThere are still some failed media.\nWhat do you want to do with them?");
         IOHelper.Print(Menus.FailedMenu);
         var option = (FailedOption)IOHelper.ChooseOptionRange(Enum.GetNames(typeof(FailedOption)).Length - 1);
 
-        if (option == FailedOption.None)
+        switch (option)
         {
-            return 0;
+            case FailedOption.None:
+                return 0;
+            case FailedOption.TryAgain:
+                return IOHelper.InputPositiveInt("\nEnter retries amount (0 - cancel): ");
+            case FailedOption.Export:
+            {
+                string finalLocation = Path.Combine(downloadLocation,
+                    $"FailedEpisodes_{DateTime.Now:HH_mm_ss_dd_MM_yyyy}.{Constants.MediaFileExtension}");
+                string mediaDetails =
+                    JsonSerializer.Serialize(media, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(finalLocation, mediaDetails);
+                IOHelper.Print($"Exported to {finalLocation}");
+                break;
+            }
         }
-
-        if (option == FailedOption.TryAgain)
-        {
-            return IOHelper.InputPositiveInt("\nEnter retries amount (0 - cancel): ");
-        }
-
-        if (option != FailedOption.Export)
-        {
-            return 0;
-        }
-
-        string finalLocation = Path.Combine(downloadLocation,
-            $"FailedEpisodes_{DateTime.Now:HH_mm_ss_dd_MM_yyyy}.{Constants.EpisodesFileExtension}");
-        string a = JsonSerializer.Serialize(episodes, new JsonSerializerOptions { WriteIndented = true });
-        await File.WriteAllTextAsync(finalLocation, a);
-        IOHelper.Print($"Exported to {finalLocation}");
 
         return 0;
     }
 
-    private static string GetFullDownloadLocation(string downloadLocation, EpisodeInformation episode)
+    private static string GetFullDownloadLocation(string downloadLocation, MediaInformation media)
     {
-        string cleanShowName =
-            string.Concat(episode.Show.NameEn.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
-        string finalLocation =
-            Path.Combine(downloadLocation, cleanShowName, episode.Season.ToString(), episode + ".mp4");
-        return finalLocation;
+        return media switch
+        {
+            MovieInformation movie => Path.Combine(downloadLocation, CleanName(movie.Name),
+                movie.Name + $".{Constants.DefaultMediaFormat}"),
+            EpisodeInformation episode => Path.Combine(downloadLocation, CleanName(episode.Show.Name),
+                episode.Season.RelativeName, episode.RelativeName + $".{Constants.DefaultMediaFormat}"),
+            _ => throw new BadMediaTypeException()
+        };
     }
 
-    private static void SummarizeDownload(int total, IEnumerable<EpisodeInformation>? failed = null)
+    private static string CleanName(string name)
     {
-        var failedList = failed?.ToList() ?? new List<EpisodeInformation>();
+        return string.Concat(name.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
+    }
+
+    private static void SummarizeDownload(int total, IEnumerable<MediaInformation>? failed = null)
+    {
+        var failedList = failed?.ToList() ?? new List<MediaInformation>();
         int success = total - failedList.Count;
-        int successPercentage = (int)((double)success / total * 100);
+        int successPercentage = total > 0 ? (int)((double)success / total * 100) : 0;
         IOHelper.Print("\nDownload Summary:");
         IOHelper.Print($"Total   = {total}");
         IOHelper.Print($"Success = {success}\t({successPercentage}%)");
@@ -418,68 +421,62 @@ internal static class Program
             return;
         }
 
-        IOHelper.Print("Failed episodes:");
-        foreach (var episode in failedList)
+        IOHelper.Print("Failed media:");
+        foreach (var media in failedList)
         {
-            IOHelper.Print($"\t{episode.Season} {episode}");
+            IOHelper.Print($"\t{media}");
         }
     }
 
-    private static async Task LoginToWebsite()
+    private static async Task LoginToProviders(IEnumerable<string> providersNames)
     {
-        if (_driver is null)
+        foreach (string providerName in providersNames)
         {
-            return;
-        }
-
-        if (await _driver.IsLoggedIn())
-        {
-            return;
-        }
-
-        IOHelper.Print("\nYou need to log in to download episodes.");
-
-        var settings = AppSettings.Default;
-        if (!string.IsNullOrWhiteSpace(settings.SdarotUsername) && !string.IsNullOrWhiteSpace(settings.SdarotPassword))
-        {
-            IOHelper.Print("\nSaved credentials detected. Trying to log in...");
-            if (await _driver.Login(settings.SdarotUsername, settings.SdarotPassword))
+            if (await HoradotService.IsLoggedIn(providerName))
             {
-                IOHelper.Print("Logged in successfully, proceeding.");
-                return;
+                continue;
             }
 
-            await settings.ResetCredentialsAsync();
-            IOHelper.Print("Bad credentials, proceeding to manual login.");
-        }
+            IOHelper.Print($"\nYou need to log in to {providerName}.");
 
-        while (true)
-        {
-            string username = IOHelper.Input("\nUsername or email: ");
-            string password = IOHelper.Input("Password: ");
-            if (await _driver.Login(username, password))
+            var settings = AppSettings.Default;
+            var saved = settings.Credentials.GetValueOrDefault(providerName);
+            if (!string.IsNullOrWhiteSpace(saved.username) && !string.IsNullOrWhiteSpace(saved.password))
             {
-                IOHelper.Print("Logged in successfully, proceeding.");
-                await settings.SaveCredentialsAsync(username, password);
-                return;
+                IOHelper.Print("\nSaved credentials detected. Trying to log in...");
+                if (await HoradotService.Login(providerName, saved.username, saved.password))
+                {
+                    IOHelper.Print("Logged in successfully, proceeding.");
+                    return;
+                }
+
+                await settings.ResetCredentialsAsync(providerName);
+                IOHelper.Print("Bad credentials, proceeding to manual login.");
             }
 
-            IOHelper.Print("Bad credentials, please try again.");
+            while (true)
+            {
+                string username = IOHelper.Input("\nUsername or email: ");
+                string password = IOHelper.Input("Password: ");
+                if (await HoradotService.Login(providerName, username, password))
+                {
+                    IOHelper.Print("Logged in successfully, proceeding.");
+                    await settings.SaveCredentialsAsync(providerName, username, password);
+                    return;
+                }
+
+                IOHelper.Print("Bad credentials, please try again.");
+            }
         }
     }
 
-    private static async Task<string?> GetEpisodeMediaUrl(EpisodeInformation episode, int retries = 2)
+    private static Task<MediaDownloadInformation?> LoadMedia(MediaInformation media, int retries = 2)
     {
-        if (_driver is null)
-        {
-            return null;
-        }
-
         do
         {
             try
             {
-                return await _driver.GetEpisodeMediaUrlAsync(episode);
+                return HoradotService.PrepareDownloadAsync(media);
             }
             catch (WebsiteErrorException)
             {
@@ -492,6 +489,6 @@ internal static class Program
             }
         } while (retries > -1);
 
-        return null;
+        return Task.FromResult<MediaDownloadInformation?>(null);
     }
 }

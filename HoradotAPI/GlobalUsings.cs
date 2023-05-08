@@ -1,0 +1,13 @@
+﻿global using System.Collections.Immutable;
+global using HtmlAgilityPack;
+global using HoradotAPI.Exceptions;
+global using HoradotAPI.Exceptions.WebsiteErrors;
+global using HoradotAPI.Extensions;
+global using HoradotAPI.Models;
+global using System.Net;
+global using System.Net.Http.Json;
+global using System.Runtime.CompilerServices;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;
+global using HoradotAPI.Interfaces;
+global using HoradotAPI.Providers.SdarotTV;

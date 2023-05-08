@@ -9,10 +9,9 @@ internal static class Constants
     public static readonly string DefaultDownloadLocation = KnownFolders.Downloads.Path;
     public const string SettingsFileName = "appsettings.json";
 
-    public const string SdarotConnectionProblemGuide =
-        "https://github.com/yairp03/HoradotTV/wiki/SdarotTV-connection-problem";
+    public const string DefaultMediaFormat = "mp4";
 
-    public const string EpisodesFileExtension = "epis";
+    public const string MediaFileExtension = "media";
 
     public static class Commands
     {
@@ -26,7 +25,7 @@ internal static class Menus
         -- Main Menu --
         [0] Quit
         [1] Search Show
-        [2] Download from .{Constants.EpisodesFileExtension} file
+        [2] Download from .{Constants.MediaFileExtension} file
         """;
 
     public const string ModesMenu = """

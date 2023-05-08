@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdarotAPI", "SdarotAPI\SdarotAPI.csproj", "{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoradotAPI", "HoradotAPI\HoradotAPI.csproj", "{D95FB81A-7AF4-446F-91C2-F42B5C84AF28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdarotAPITest", "SdarotAPITest\SdarotAPITest.csproj", "{F5E7F813-0F8E-4A82-A262-939F2A536AA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoradotAPITest", "HoradotAPITest\HoradotAPITest.csproj", "{F5E7F813-0F8E-4A82-A262-939F2A536AA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HoradotTV.Console", "HoradotTV.Console\HoradotTV.Console.csproj", "{ADA53817-BD56-46E0-B81E-570D929FC848}"
 EndProject
