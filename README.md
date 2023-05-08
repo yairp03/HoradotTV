@@ -69,7 +69,7 @@ Contributors who are willing to help utilize the `HoradotAPI` library to build t
 
 ## Contributing
 
-If the URL for SdarotTV changes, please fork the repository, change the [SdarotTV-url.txt](/Resources/SdarotTV-url.txt) file, and open a PR.
+If the URL for SdarotTV changes, please fork the repository, change the [SdarotTV-domain.txt](/Resources/SdarotTV-domain.txt) file, and open a PR.
 
 If you find any bugs or have any suggestions, please open an issue on [GitHub](https://github.com/yairp03/HoradotTV/issues).
 
