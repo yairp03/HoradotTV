@@ -1,24 +1,35 @@
 # HoradotTV
 
-Downloader for SdarotTV
+Downloader for Shows/Movies providers.
 
-## SdarotAPI
+Currently supported providers:
+- SdarotTV
+- SratimTV (Coming soon)
 
-The SdarotAPI is a library allowing:
+## HoradotAPI
 
-- Access metadata of shows, seasons and episodes.
-- Get access to SdarotTV's media servers.
-- Download episodes from SdarotTV.
-- Retrieve the most updated SdarotTV domain.
+The HoradotAPI is a library allowing you t to access metadata and download shows/movies from content providers.
+
+The library is very extensible and allows you to add support for new providers easily.
+
+The library also has built-in support for the following providers:
+- SdarotTV
+   - Access SdarotTV's search engine.
+   - Access metadata of shows, seasons and episodes.
+   - Access SdarotTV's media servers.
+   - Login to SdarotTV.
+   - Signup to SdarotTV (Coming soon)
+- SratimTV (Coming soon)
 
 ## Console App
 
-The console app is a command-line application that utilizes the SdarotAPI library, with the power to Download in 4 different download modes:
+The console app is a command-line application that utilizes the HoradotAPI library, with the power to Download in 4 different download modes:
 
 - Single episode download.
 - Multiple episode download.
 - Complete season download.
 - Complete show download.
+- Movie download.
 
 With some more features like retries on server errors, and division to folders.
 
@@ -47,17 +58,19 @@ If you want to build the project from source, you can do that by using Visual St
 ## GUI App
 
 The GUI app is currently on hold.  
-Contributors who are willing to help use the SdarotAPI library to build the GUI app are welcome to contact me.
+Contributors who are willing to help utilize the `HoradotAPI` library to build the GUI app are welcome to contact me.
 
 ## Future Development
 
-- Release updater.
 - Support for SratimTV.
+- Release updater.
 - GUI app.
-- SdarotAPI in Python. (In the meanwhile, check out [Xiddoc's project](https://github.com/Xiddoc/PySdarot))
+- HordotAPI in Python. (In the meanwhile, check out [Xiddoc's python API for SdarotTV](https://github.com/Xiddoc/PySdarot))
 
 ## Contributing
 
-If the URL for SdarotTV changes, please fork the repository, change the [sdarot-url.txt](https://github.com/yairp03/HoradotTV/blob/master/Resources/sdarot-url.txt) file, and open a PR.  
-If you find any bugs or have any suggestions, please open an issue on [GitHub](https://github.com/yairp03/HoradotTV/issues).  
-Contributors can check the [issues](https://github.com/yairp03/HoradotTV/issues) page for open issues and help make this project the best.
+If the URL for SdarotTV changes, please fork the repository, change the [SdarotTV-url.txt](/Resources/SdarotTV-url.txt) file, and open a PR.
+
+If you find any bugs or have any suggestions, please open an issue on [GitHub](https://github.com/yairp03/HoradotTV/issues).
+
+Contributors can check the [issues](https://github.com/yairp03/HoradotTV/issues) page for open issues and help improve this project.
