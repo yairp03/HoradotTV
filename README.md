@@ -14,11 +14,11 @@ The library is very extensible and allows you to add support for new providers e
 
 The library also has built-in support for the following providers:
 - SdarotTV
-   - Access SdarotTV's search engine.
-   - Access metadata of shows, seasons and episodes.
-   - Access SdarotTV's media servers.
-   - Login to SdarotTV.
-   - Signup to SdarotTV (Coming soon)
+  - Access SdarotTV's search engine.
+  - Access metadata of shows, seasons and episodes.
+  - Access SdarotTV's media servers.
+  - Login to SdarotTV.
+  - Signup to SdarotTV (Coming soon)
 - SratimTV (Coming soon)
 
 ## Console App
