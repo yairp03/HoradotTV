@@ -75,8 +75,8 @@ public class SratimTVService : IContentProvider
         };
 
         var searchResult = await JsonSerializer.DeserializeAsync<SratimTVSearchResult>(
-            await (await httpClient.PostAsync(Constants.Urls.MovieSearchUrl, new FormUrlEncodedContent(data))).Content
-                .ReadAsStreamAsync());
+            await (await httpClient.PostAsync(Constants.Urls.ApiMovieSearchUrl, new FormUrlEncodedContent(data)))
+                .Content.ReadAsStreamAsync());
 
         if (searchResult is null)
         {
@@ -92,34 +92,72 @@ public class SratimTVService : IContentProvider
     }
 
     public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media) =>
-        throw new NotImplementedException();
+        PrepareDownloadAsync(media, null);
 
     public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress) =>
-        throw new NotImplementedException();
+        PrepareDownloadAsync(media, progress, default(CancellationToken));
 
-    public Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media, IProgress<double>? progress,
-        CancellationToken ct) => throw new NotImplementedException();
+    public async Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
+        IProgress<double>? progress, CancellationToken ct)
+    {
+        if (!isInitialized)
+        {
+            throw new ServiceNotInitialized();
+        }
+
+        if (media is not MovieInformation movie)
+        {
+            throw new ArgumentException("Media is not movie.", nameof(media));
+        }
+
+        // Start 30 seconds loading
+        string token = await httpClient.GetStringAsync(Constants.Urls.ApiMoviePreWatchUrl, ct);
+
+        for (double i = 0.0; i < Constants.WaitAmount; i += 1.0 / Constants.WaitUps)
+        {
+            await Task.Delay(1000 / Constants.WaitUps, ct);
+            progress?.Report(i);
+        }
+
+        // Fetch episode media details
+        var mediaDetails = await httpClient.GetFromJsonAsync<SratimTVMediaDetails>(GetMovieUrl(movie, token), ct);
+
+        if (mediaDetails is null)
+        {
+            return null;
+        }
+
+        return new MediaDownloadInformation
+        {
+            Information = media,
+            Resolutions = mediaDetails.Resolutions.ToImmutableDictionary()
+        };
+    }
 
     public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream) =>
-        throw new NotImplementedException();
+        DownloadAsync(media, resolution, stream, null);
 
     public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
-        IProgress<long>? progress) => throw new NotImplementedException();
+        IProgress<long>? progress) => DownloadAsync(media, resolution, stream, progress, default(CancellationToken));
 
     public Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream, IProgress<long>? progress,
         CancellationToken ct) =>
-        throw new NotImplementedException();
+        httpClient.DownloadAsync($"https:{media.Resolutions[resolution]}", stream, progress, ct);
+
+    private static string GetMovieUrl(MediaInformation movie, string token) =>
+        $"{Constants.Urls.ApiMovieWatchUrl}/id/{movie.Id}/token/{token}";
 
     private static class Constants
     {
         internal const string UserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
 
-        internal const string LoginMessage = "התחברות לאתר";
-
         internal const string ImagesFormat = "jpg";
 
         internal const int QueryMinLength = 3;
+        
+        internal const double WaitAmount = 30.0;
+        internal const int WaitUps = 10;
 
         internal static class Urls
         {
@@ -130,25 +168,18 @@ public class SratimTVService : IContentProvider
                 "https://github.com/yairp03/HoradotTV/wiki/SratimTV-connection-problem";
 
             internal static string BaseDomain { get; set; } = "";
-            internal static string HomeUrl => $"https://{BaseDomain}/";
-            internal static string ApiUrl => $"https://api.{BaseDomain}/";
 
-            internal static string LoginUrl => $"{HomeUrl}login";
-            internal static string MovieUrl => $"{HomeUrl}movie/";
-            internal static string MovieSearchUrl => $"{ApiUrl}movie/search";
-            internal static string ImageUrl => $"https://static.{BaseDomain}/movies/";
+            private static string ApiUrl => $"https://api.{BaseDomain}";
+            private static string ApiMovieUrl => $"{ApiUrl}/movie";
+            internal static string ApiMovieSearchUrl => $"{ApiMovieUrl}/search";
+            internal static string ApiMoviePreWatchUrl => $"{ApiMovieUrl}/preWatch";
+            internal static string ApiMovieWatchUrl => $"{ApiMovieUrl}/watch";
+
+            internal static string HomeUrl => $"https://{BaseDomain}";
+            private static string MovieUrl => $"{HomeUrl}/movie/";
             internal static string TestUrl => $"{MovieUrl}7334";
-            internal static string AjaxWatchUrl => $"{HomeUrl}ajax/watch";
-            internal static string AjaxAllShowsUrl => $"{HomeUrl}ajax/index?srl=1";
-        }
 
-        internal static class XPathSelectors
-        {
-            internal const string MainPageLoginPanelButton = "//*[@id=\"slideText\"]/p/button";
-
-            internal const string ShowPageSeason = "//*[@id=\"season\"]/li";
-
-            internal const string AjaxEpisode = "/li";
+            internal static string ImageUrl => $"https://static.{BaseDomain}/movies/";
         }
     }
 }

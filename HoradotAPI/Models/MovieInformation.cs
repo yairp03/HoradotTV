@@ -5,4 +5,6 @@
 public record MovieInformation : MediaInformation
 {
     public string? ImageUrl { get; set; }
+
+    public override string ToString() => base.ToString();
 }

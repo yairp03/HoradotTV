@@ -23,4 +23,6 @@ public record SratimTVMovieInformation : MovieInformation
             Name = names[1].Trim();
         }
     }
+
+    public override string ToString() => base.ToString();
 }

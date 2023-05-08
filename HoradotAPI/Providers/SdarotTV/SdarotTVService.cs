@@ -101,9 +101,9 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
         var postResult = await httpClient.PostAsync(Constants.Urls.AjaxWatchUrl, new FormUrlEncodedContent(data), ct);
         string token = await postResult.Content.ReadAsStringAsync(ct);
 
-        for (double i = 0.1; i <= 30; i += 0.1)
+        for (double i = 0.0; i < Constants.WaitAmount; i += 1.0 / Constants.WaitUps)
         {
-            await Task.Delay(100, ct);
+            await Task.Delay(1000 / Constants.WaitUps, ct);
             progress?.Report(i);
         }
 
@@ -309,6 +309,9 @@ public class SdarotTVService : IAuthContentProvider, IShowProvider
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
 
         internal const string LoginMessage = "התחברות לאתר";
+
+        internal const double WaitAmount = 30.0;
+        internal const int WaitUps = 10;
 
         internal static class Urls
         {

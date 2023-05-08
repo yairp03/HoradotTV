@@ -23,9 +23,11 @@ public class HoradotService : IShowProvider
             new SratimTVService()
         };
 
+        var initializeTasks = providersList.Select(provider => provider.InitializeAsync()).ToList();
+        await Task.WhenAll(initializeTasks);
         for (int i = providersList.Count - 1; i >= 0; i--)
         {
-            (bool success, string message) = await providersList[i].InitializeAsync();
+            (bool success, string message) = await initializeTasks[i];
             if (success)
             {
                 continue;
@@ -49,10 +51,13 @@ public class HoradotService : IShowProvider
             throw new ServiceNotInitialized();
         }
 
+        var searchTasks = contentProviders.Select(provider => provider.SearchAsync(query)).ToList();
+        await Task.WhenAll(searchTasks);
+        
         List<MediaInformation> results = new();
-        foreach (var provider in contentProviders)
+        foreach (var searchTask in searchTasks)
         {
-            results.AddRange(await provider.SearchAsync(query));
+            results.AddRange(await searchTask);
         }
 
         return results;
