@@ -449,7 +449,7 @@ internal static class Program
                 if (await HoradotService.Login(providerName, saved.username, saved.password))
                 {
                     IOHelper.Print("Logged in successfully, proceeding.");
-                    return;
+                    continue;
                 }
 
                 await settings.ResetCredentialsAsync(providerName);
@@ -464,7 +464,7 @@ internal static class Program
                 {
                     IOHelper.Print("Logged in successfully, proceeding.");
                     await settings.SaveCredentialsAsync(providerName, username, password);
-                    return;
+                    break;
                 }
 
                 IOHelper.Print("Bad credentials, please try again.");
