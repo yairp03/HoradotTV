@@ -7,19 +7,22 @@ public class HoradotService : BaseShowProvider, IShowProvider
 
     public override string Name => "Horadot";
 
-    public override async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks)
-    {
-        if (isInitialized)
-        {
-            throw new ServiceAlreadyInitialized();
-        }
-
-        List<string> errorMessages = new();
-        List<IContentProvider> providersList = new()
+    private static List<IContentProvider> GetDefaultProvidersList() =>
+        new()
         {
             new SdarotTVService(),
             new SratimTVService()
         };
+
+    public override Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks) =>
+        InitializeAsync(doChecks, GetDefaultProvidersList());
+
+    private async Task<(bool success, string errorMessage)> InitializeAsync(bool doChecks,
+        List<IContentProvider> providersList)
+    {
+        AssertNotInitialized();
+
+        List<string> errorMessages = new();
 
         var initializeTasks = providersList.Select(provider => provider.InitializeAsync(doChecks)).ToList();
         await Task.WhenAll(initializeTasks);
@@ -38,43 +41,34 @@ public class HoradotService : BaseShowProvider, IShowProvider
         contentProviders = providersList.ToArray();
         isInitialized = true;
 
-        string errorMessage = string.Join("\n", errorMessages);
+        string errorMessage = string.Join(Environment.NewLine, errorMessages);
         return (string.IsNullOrWhiteSpace(errorMessage), errorMessage);
     }
 
-    public void InitializeAsync(IEnumerable<IContentProvider> providers)
+    private async Task<IEnumerable<T>> GatherData<T>(Func<IContentProvider, Task<IEnumerable<T>>> selector)
     {
-        if (isInitialized)
+        AssertInitialized();
+
+        var allTasks = contentProviders.Select(selector).ToList();
+        await Task.WhenAll(allTasks);
+
+        List<T> allData = new();
+        foreach (var task in allTasks)
         {
-            throw new ServiceAlreadyInitialized();
+            allData.AddRange(await task);
         }
 
-        contentProviders = providers.ToArray();
-        isInitialized = true;
+        return allData;
     }
 
-    public override async Task<IEnumerable<MediaInformation>> SearchAsync(string query)
-    {
-        if (!isInitialized)
-        {
-            throw new ServiceNotInitialized();
-        }
-
-        var searchTasks = contentProviders.Select(provider => provider.SearchAsync(query)).ToList();
-        await Task.WhenAll(searchTasks);
-
-        List<MediaInformation> results = new();
-        foreach (var searchTask in searchTasks)
-        {
-            results.AddRange(await searchTask);
-        }
-
-        return results;
-    }
+    public override Task<IEnumerable<MediaInformation>> SearchAsync(string query) =>
+        GatherData(provider => provider.SearchAsync(query));
 
     public override Task<MediaDownloadInformation?> PrepareDownloadAsync(MediaInformation media,
         IProgress<double>? progress, CancellationToken ct)
     {
+        AssertInitialized();
+
         var provider = GetProvider(media.ProviderName);
         if (provider is null)
         {
@@ -87,8 +81,9 @@ public class HoradotService : BaseShowProvider, IShowProvider
     public override Task DownloadAsync(MediaDownloadInformation media, int resolution, Stream stream,
         IProgress<long>? progress, CancellationToken ct)
     {
-        var provider = GetProvider(media.Information.ProviderName);
-        if (provider is null)
+        AssertInitialized();
+
+        if (GetProvider(media.Information.ProviderName) is not { } provider)
         {
             throw new ProviderNotFoundException(media.Information.ProviderName);
         }
@@ -98,6 +93,8 @@ public class HoradotService : BaseShowProvider, IShowProvider
 
     public override Task<IEnumerable<SeasonInformation>> GetSeasonsAsync(ShowInformation show)
     {
+        AssertInitialized();
+
         if (GetProvider(show.ProviderName) is not IShowProvider provider)
         {
             throw new ProviderNotFoundException(show.ProviderName);
@@ -108,6 +105,8 @@ public class HoradotService : BaseShowProvider, IShowProvider
 
     public override Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(SeasonInformation season)
     {
+        AssertInitialized();
+
         if (GetProvider(season.ProviderName) is not IShowProvider provider)
         {
             throw new ProviderNotFoundException(season.ProviderName);
@@ -119,6 +118,8 @@ public class HoradotService : BaseShowProvider, IShowProvider
     public new Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(EpisodeInformation firstEpisode,
         int maxEpisodeAmount)
     {
+        AssertInitialized();
+
         if (GetProvider(firstEpisode.ProviderName) is not IShowProvider provider)
         {
             throw new ProviderNotFoundException(firstEpisode.ProviderName);
@@ -129,6 +130,8 @@ public class HoradotService : BaseShowProvider, IShowProvider
 
     public new Task<IEnumerable<EpisodeInformation>> GetEpisodesAsync(ShowInformation show)
     {
+        AssertInitialized();
+
         if (GetProvider(show.ProviderName) is not IShowProvider provider)
         {
             throw new ProviderNotFoundException(show.ProviderName);
@@ -144,8 +147,27 @@ public class HoradotService : BaseShowProvider, IShowProvider
         ? Task.FromResult(true)
         : provider.IsLoggedIn();
 
-    public Task<bool> Login(string providerName, string username, string password) =>
-        GetProvider(providerName) is not IAuthContentProvider provider
-            ? Task.FromResult(true)
-            : provider.Login(username, password);
+    public async Task<bool> Login(string providerName, string username, string password)
+    {
+        AssertInitialized();
+
+        var provider = GetProvider(providerName) as IAuthContentProvider;
+        return provider == null || await provider.Login(username, password);
+    }
+
+    private void AssertInitialized()
+    {
+        if (!isInitialized)
+        {
+            throw new ServiceNotInitialized();
+        }
+    }
+
+    private void AssertNotInitialized()
+    {
+        if (isInitialized)
+        {
+            throw new ServiceAlreadyInitialized();
+        }
+    }
 }

@@ -8,3 +8,4 @@ global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using HoradotAPI.Exceptions;
 global using HoradotAPI.Extensions;
+global using HoradotTV.Console.Utilities;
