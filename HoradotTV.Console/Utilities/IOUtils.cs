@@ -1,6 +1,6 @@
-﻿namespace HoradotTV.Console;
+﻿namespace HoradotTV.Console.Utilities;
 
-internal static class IOHelper
+internal static class IOUtils
 {
     public static void Print(string s) => System.Console.WriteLine(s);
     public static void Log(string s) => Print($"[{DateTime.Now:T}] {s}");
