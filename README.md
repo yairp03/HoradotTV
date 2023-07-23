@@ -1,3 +1,6 @@
+**Disclaimer!**  
+This repo is for educational purposes only and not for commercial use.
+
 # HoradotTV
 
 Downloader for Shows/Movies providers.
@@ -8,14 +11,14 @@ Currently supported providers:
 
 ## HoradotAPI
 
-The HoradotAPI is a library allowing you to access metadata and download shows/movies from content providers.
+The HoradotAPI library allows you to access metadata and download shows/movies from content providers.
 
-The library is very extensible and allows you to add support for new providers easily.
+The library is very extensible and allows you to easily add support for new providers.
 
 The library also has built-in support for the following providers:
 - SdarotTV
   - Access SdarotTV's search engine.
-  - Access metadata of shows, seasons and episodes.
+  - Access metadata of shows, seasons, and episodes.
   - Access SdarotTV's media servers.
   - Login to SdarotTV.
   - Signup to SdarotTV (Coming soon)
@@ -62,7 +65,7 @@ If you want to build the project from source, you can do that by using Visual St
 ## GUI App
 
 The GUI app is currently on hold.  
-Contributors who are willing to help utilize the `HoradotAPI` library to build the GUI app are welcome to contact me.
+Contributors willing to help utilize the `HoradotAPI` library to build the GUI app are welcome to contact me.
 
 ## Future Development
 
